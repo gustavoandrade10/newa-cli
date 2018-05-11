@@ -1,4 +1,7 @@
 //docs[http://www.kammerl.de/ascii/AsciiSignature.php]
+import * as json from './../../package.json'
+
+let packJson = <any>json;
 
 export let LOGO: string = `
 .-----------------. .----------------.  .----------------.  .----------------. 
@@ -12,5 +15,5 @@ export let LOGO: string = `
 | |              | || |              | || |              | || |              | |
 | '--------------' || '--------------' || '--------------' || '--------------' |
  '----------------'  '----------------'  '----------------'  '----------------' 
-(CLI - Node Express Web Api using typescript)
+(CLI - Node Express Web Api using typescript) Version ${packJson.version}
 `

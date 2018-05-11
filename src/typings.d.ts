@@ -113,3 +113,8 @@ declare class Ora {
 
     frameIndex: number;
 }
+
+declare module "*.json" {
+    const value: any;
+    export default value;
+}
