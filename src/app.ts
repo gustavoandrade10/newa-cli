@@ -6,12 +6,15 @@ import { Validator} from './utils/validator';
 
 //services
 import { ProjectService } from './services/project.service';
+import { ModelService } from './services/model.service';
 
 class App {
     
     private project: ProjectService;
+    private model: ModelService;
     constructor() {
         this.project = new ProjectService();
+        this.model =  new ModelService();
         this.commands();
     }
 
@@ -29,6 +32,8 @@ class App {
                 Log.error('Project name may only include letters, numbers, hyphen and underscore.');
                 return false;
             })
+            .option('-g model, generate model, --generate model <n>', 'Creates a model')
+            .option('--e , --environment <n>', 'Enviroment commad')
             .parse(process.argv);
 
         //Execute tasks
@@ -48,6 +53,18 @@ class App {
                 this.project.create(projectName, result);
                
             });
+        }
+        else if(commander.model){
+            
+            let databaseEnviroment = commander.environment != undefined ? commander.environment : 'default';
+
+            // if users don´t uses flag --e or --environment with generate model flag
+            if(!commander.environment){
+                Log.yellow('Flag --e wasn´t detected, it will use "development" database config connection from.')
+            }
+
+            this.model.newModel(commander.model,databaseEnviroment);
+            
         }
         else{
             Log.showLogo();
