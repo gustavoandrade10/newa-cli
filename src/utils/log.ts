@@ -17,6 +17,10 @@ export class Log {
         console.log(Colors.White, message);
     }
 
+    static yellow(message: string){
+        console.log(Colors.Yellow, message);
+    }
+
     static showLogo(){
         console.log(Colors.Yellow, LOGO);
     }
