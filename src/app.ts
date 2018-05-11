@@ -40,10 +40,10 @@ class App {
                 type: 'input',
                 name: 'install_dependencies',
                 message: `Do you want NEWA to install the project(${commander.new}) dependencies after creation?`,
-                validate: Validator.inquirerYerOrNoAnswerValidator
+                validate: Validator.inquirerYesOrNoAnswerValidator
             }).then((answers: any) => {
                 
-                let result = Validator.yerOrNoAnswerValidator(answers.install_dependencies);
+                let result = Validator.yesOrNoAnswerValidator(answers.install_dependencies);
                 
                 this.project.create(projectName, result);
                

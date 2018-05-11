@@ -10,7 +10,7 @@ export class Validator{
     }
 
     //Returns true if it is a positive answer and false if it isn´t.
-    static yerOrNoAnswerValidator(value: string): boolean{
+    static yesOrNoAnswerValidator(value: string): boolean{
         
         let validAnwers: any = {
             'yes': true, 'ye': true, 'y': true, 'sim': true, 's': true, '': true,
@@ -28,7 +28,7 @@ export class Validator{
     }
 
 
-    static inquirerYerOrNoAnswerValidator = (value: string) => {
+    static inquirerYesOrNoAnswerValidator = (value: string) => {
         
         let validAnwers: any = {
             'yes': true, 'ye': true, 'y': true, 'sim': true, 's': true, '': true,
