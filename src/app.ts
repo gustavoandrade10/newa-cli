@@ -39,18 +39,14 @@ class App {
             inquirer.prompt({
                 type: 'input',
                 name: 'install_dependencies',
-                message: `Do you want NEWA to install the project(${commander.new}) dependencies after creation?`
+                message: `Do you want NEWA to install the project(${commander.new}) dependencies after creation?`,
+                validate: Validator.inquirerYerOrNoAnswerValidator
             }).then((answers: any) => {
                 
                 let result = Validator.yerOrNoAnswerValidator(answers.install_dependencies);
                 
-                if(result === true || result === false){
-                    this.project.create(projectName, result);
-                }
-                else{
-                    Log.error(` "${answers.install_dependencies}" it is not a valid option, try 'yes' or 'no' as option.`);
-                }
-
+                this.project.create(projectName, result);
+               
             });
         }
         else{

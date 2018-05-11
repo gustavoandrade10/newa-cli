@@ -10,7 +10,7 @@ export class Validator{
     }
 
     //Returns true if it is a positive answer and false if it isn´t.
-    static yerOrNoAnswerValidator(value: string) {
+    static yerOrNoAnswerValidator(value: string): boolean{
         
         let validAnwers: any = {
             'yes': true, 'ye': true, 'y': true, 'sim': true, 's': true, '': true,
@@ -23,11 +23,26 @@ export class Validator{
         if(validAnwers[value] === true){
             return true;
         }
-        else if(validAnwers[value] === false){
-            return false;
+
+        return false;
+    }
+
+
+    static inquirerYerOrNoAnswerValidator = (value: string) => {
+        
+        let validAnwers: any = {
+            'yes': true, 'ye': true, 'y': true, 'sim': true, 's': true, '': true,
+            'no': false, 'not': false, 'n': false, 'nao': false, 'não': false 
+        }
+
+        if(value.length)
+            value = value.trim().toLowerCase();
+        
+        if(validAnwers[value] === true || validAnwers[value] === false){
+            return  true;
         }
         else{
-            return 'invalid';
+            return `"${value}" it is not a valid option, try 'yes' or 'no' as option.`;;
         }
     }
 
