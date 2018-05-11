@@ -115,7 +115,7 @@ export class ModelService{
 
            tableAttributes.forEach((column: ITableColumn) => {
                //Create here logic to generate model file
-                console.log(column.Field);
+                console.log(column);
            });
 
            this.createModel();
