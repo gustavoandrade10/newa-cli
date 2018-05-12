@@ -4,6 +4,7 @@ import * as child_process from 'child_process';
 import * as Ora from 'ora';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import { config } from '../../config/config';
 
 export class ProjectService {
@@ -28,10 +29,11 @@ export class ProjectService {
                 this.spinner.color = 'yellow';
                 this.spinner.start();
 
-                nrc.run('git clone ' + config.NEWARepository.url).then((response: any) => {
+                // Clones repository to system .tmp folder;
+                nrc.run(`git clone ${config.NEWARepository.url} ${path.resolve(os.tmpdir(), config.NEWARepository.name)}`).then((response: any) => {
 
                     //Rename the project from the repository to the name of project that user choose.
-                    let currentRepositoryFolderPath = path.resolve(process.cwd(), config.NEWARepository.name);
+                    let currentRepositoryFolderPath = path.resolve(os.tmpdir(), config.NEWARepository.name);
                     let newRepositoryFolderPath = path.resolve(process.cwd(), projectName);
 
                     fs.rename(currentRepositoryFolderPath, newRepositoryFolderPath, this.onCreated.bind(null, installDependencies));
@@ -61,7 +63,7 @@ export class ProjectService {
 
                     if (!err) {
                         Log.success('\n Dependencies installed successfully!.');
-                        Log.info('\n To serve your application run:');
+                        Log.info('\n To serve the application run:');
                         Log.yellow(` cd ${this.projectName} && gulp serve`);
                     }
                     else {
@@ -70,6 +72,10 @@ export class ProjectService {
                 });
             }, 150)
 
+        }
+        else{
+            Log.yellow(` Run "cd ${this.projectName} && npm install" to install project dependecies. `);
+            Log.yellow(` Then run "gulp serve" to serve the application. `);
         }
 
     }

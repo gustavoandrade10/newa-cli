@@ -5,7 +5,7 @@ import { config } from '../../config/config';
 export class ValidateService {
 
     constructor() { }
-
+    
     isInsideNEWAProject(): boolean {
         let InvalidPathException = {};
         let response: boolean = true;

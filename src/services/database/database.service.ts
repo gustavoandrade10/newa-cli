@@ -20,7 +20,7 @@ export class DatabaseService {
         switch (databaseConnection.dialect) {
 
             case 'mysql':
-                this.mysqlModelHandler(databaseConnection, callback);
+                this.mysqlGetTablesAndAttributes(databaseConnection, callback);
                 break;
 
             default:
@@ -30,7 +30,7 @@ export class DatabaseService {
 
     }
 
-    private mysqlModelHandler(databaseConnection: IDatabaseConnection, callback: Function) {
+    private mysqlGetTablesAndAttributes(databaseConnection: IDatabaseConnection, callback: Function) {
 
         this.mysqlConnection = mysql.createConnection({
             host: databaseConnection.host,

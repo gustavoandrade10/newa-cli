@@ -51,9 +51,9 @@ class App {
                 validate: Validator.inquirerYesOrNoAnswerValidator
             }).then((answers: any) => {
 
-                let result = Validator.yesOrNoAnswerValidator(answers.install_dependencies);
+                let hasToInstallDepedencies = Validator.yesOrNoAnswerValidator(answers.install_dependencies);
 
-                this.projectService.create(projectName, result);
+                this.projectService.create(projectName, hasToInstallDepedencies);
 
             });
         }
@@ -72,7 +72,7 @@ class App {
 
             }
             else{
-                Log.error('You are not inside a "NEWA" project.');
+                Log.error('You are not inside of a "NEWA" project.');
                 Log.yellow('Run: newa new "your-project-name" to create a new one.');
             }
         }
