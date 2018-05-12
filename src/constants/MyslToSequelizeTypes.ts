@@ -1,4 +1,4 @@
-import { IMysqlSequelizeType } from "../interfaces/IMysqlSequelizeType";
+import { IMysqlSequelizeType } from "../services/model/interfaces/IMysqlSequelizeType";
 
 let MyslToSequelizeTypes: Array<IMysqlSequelizeType>;
 

@@ -4,9 +4,9 @@ import * as inquirer from 'inquirer';
 import { Log } from './utils/log';
 import { Validator} from './utils/validator';
 
-//services
-import { ProjectService } from './services/project.service';
-import { ModelService } from './services/model.service';
+// import services
+import { ProjectService } from './services/project/project.service';
+import { ModelService } from './services/model/model.service';
 
 class App {
     
@@ -60,7 +60,7 @@ class App {
 
             // if users don´t uses flag --e or --environment with generate model flag
             if(!commander.environment){
-                Log.yellow('Flag --e wasn´t detected, it will use "development" database config connection from.')
+                Log.yellow('Flag --e wasn´t detected, it will use "development" database config connection.')
             }
 
             this.model.newModel(commander.model,databaseEnviroment);

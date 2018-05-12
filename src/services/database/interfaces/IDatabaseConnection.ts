@@ -4,4 +4,6 @@ export interface IDatabaseConnection{
     database: string,
     host: string;
     dialect: string;
+    //used to know which environment user is using , development , production
+    environment: string; 
 }

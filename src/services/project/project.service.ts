@@ -1,11 +1,10 @@
+import {Log} from '../../utils/log';
 var nrc = require('node-run-cmd');
 import * as child_process from 'child_process';
 import * as Ora from 'ora';
 import * as fs from 'fs';
 import * as path from 'path';
-import { config } from '../config/config';
-import { Log } from '../utils/log';
-import { Colors } from '../enums/colors';
+import { config } from '../../config/config';
 
 export class ProjectService {
 
