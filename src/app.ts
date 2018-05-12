@@ -2,19 +2,22 @@
 import * as commander from 'commander';
 import * as inquirer from 'inquirer';
 import { Log } from './utils/log';
-import { Validator} from './utils/validator';
+import { Validator } from './utils/validator';
 
 // import services
 import { ProjectService } from './services/project/project.service';
 import { ModelService } from './services/model/model.service';
+import { ValidateService } from './services/validate/validate.service';
 
 class App {
-    
-    private project: ProjectService;
-    private model: ModelService;
+
+    private projectService: ProjectService;
+    private modelService: ModelService;
+    private validateService: ValidateService;
     constructor() {
-        this.project = new ProjectService();
-        this.model =  new ModelService();
+        this.projectService = new ProjectService();
+        this.modelService = new ModelService();
+        this.validateService = new ValidateService();
         this.commands();
     }
 
@@ -47,26 +50,33 @@ class App {
                 message: `Do you want NEWA to install the project(${commander.new}) dependencies after creation?`,
                 validate: Validator.inquirerYesOrNoAnswerValidator
             }).then((answers: any) => {
-                
+
                 let result = Validator.yesOrNoAnswerValidator(answers.install_dependencies);
-                
-                this.project.create(projectName, result);
-               
+
+                this.projectService.create(projectName, result);
+
             });
         }
-        else if(commander.model){
-            
-            let databaseEnviroment = commander.environment != undefined ? commander.environment : 'default';
+        else if (commander.model) {
 
-            // if users don´t uses flag --e or --environment with generate model flag
-            if(!commander.environment){
-                Log.yellow('Flag --e wasn´t detected, it will use "development" database config connection.')
+            if (this.validateService.isInsideNEWAProject()) {
+
+                let databaseEnviroment = commander.environment != undefined ? commander.environment : 'default';
+
+                // if users don´t uses flag --e or --environment with generate model flag
+                if (!commander.environment) {
+                    Log.yellow('Flag --e wasn´t detected, it will use "development" database config connection.')
+                }
+
+                this.modelService.newModel(commander.model, databaseEnviroment);
+
             }
-
-            this.model.newModel(commander.model,databaseEnviroment);
-            
+            else{
+                Log.error('You are not inside a "NEWA" project.');
+                Log.yellow('Run: newa new "your-project-name" to create a new one.');
+            }
         }
-        else{
+        else {
             Log.showLogo();
         }
 
