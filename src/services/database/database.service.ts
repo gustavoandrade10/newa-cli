@@ -58,13 +58,13 @@ export class DatabaseService {
 
                 // Get tables names
                 tables.forEach((table) => {
-                    this.listOfTables.push({ name: table[Object.keys(table)[0]], attributes: [] });
+                    this.listOfTables.push({ name: table[Object.keys(table)[0]], columns: [] });
                 });
 
                 // Get tables attributes
                 this.listOfTables.forEach((table: Table, index: number) => {
 
-                    this.mysqlConnection.query('DESCRIBE ' + table.name, (err: mysql.MysqlError, tableAttributes: Array<TableColumn>) => {
+                    this.mysqlConnection.query('DESCRIBE ' + table.name, (err: mysql.MysqlError, tableColumns: Array<TableColumn>) => {
                         if (err) {
                             this.response.success = false;
                             this.response.error = new LogErrorResponse(`Insuficient previlegies in database "${databaseConnection.database}" for table ${table.name}`, err.message);
@@ -72,7 +72,7 @@ export class DatabaseService {
                             return false;
                         }
 
-                        table.attributes = tableAttributes;
+                        table.columns = tableColumns;
 
                         // Success
                         if (index == this.listOfTables.length - 1) {

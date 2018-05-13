@@ -1,4 +1,4 @@
-import {Log} from '../../utils/log';
+import { Log } from '../../utils/log';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as Ora from 'ora';
@@ -6,11 +6,13 @@ import { DatabaseService } from '../database/database.service';
 import { IDatabaseConnection } from '../database/interfaces/IDatabaseConnection';
 import { config } from '../../config/config';
 import { BaseResponse } from '../../utils/BaseResponse';
+import { Table } from '../database/classes/table';
+import { ModelTemplate } from './classes/modelTemplate';
+import { MyslToSequelizeTypes } from './constants/MyslToSequelizeTypes';
 
 export class ModelService {
 
     private databaseConnection: IDatabaseConnection;
-    private modelName: string;
     private spinner: Ora;
     private database: DatabaseService;
     constructor() {
@@ -18,10 +20,9 @@ export class ModelService {
         this.database = new DatabaseService();
     }
 
-    newModel = (modelName: string, dataBaseConfig: string) => {
-        this.modelName = modelName;
+    create = (modelName: string, dataBaseConfig: string) => {
 
-        this.spinner.text = `Generating model(${this.modelName}) ...`;
+        this.spinner.text = `Generating model(${modelName}) ...`;
         this.spinner.color = 'yellow';
         this.spinner.start();
 
@@ -35,23 +36,41 @@ export class ModelService {
                 this.databaseConnection = dataBaseConfig == 'default' ? JsonDatabaseConfig[Object.keys(JsonDatabaseConfig)[0]] : JsonDatabaseConfig[dataBaseConfig];
 
                 if (this.databaseConnection) {
-                    
+
                     this.database.connect(this.databaseConnection, (response: BaseResponse) => {
 
-                        if(response.success){
-                            
-                            let modelTable = this.database.listOfTables.find((table) => table.name == this.modelName);
+                        if (response.success) {
 
-                            if(modelTable){
-                               //do the model logic here
-                            }  
-                            else{
+
+                            let modelTable = this.database.listOfTables.find((table) => table.name == modelName);
+
+                            if (modelTable) {
+                               
+                                modelName =  modelName[0].toUpperCase() + modelName.substr(1);
+                                let model = this.getModelFromTable(modelTable, modelName);
+
+                                fs.writeFile(path.resolve(process.cwd(), config.NEWARepository.modelsPath, modelName + ".ts"), model, (err) => {
+                                    if (err){
+                                        Log.error('Error to generate model.');
+                                    }
+                                    else{
+                                        Log.success("\nSuccess");
+                                        Log.success(path.resolve(config.NEWARepository.modelsPath, modelName + ".ts"));
+                                    }
+                                    
+                                    this.spinner.stop();
+                                    process.exit();
+                                });
+                            }
+                            else {
+
                                 this.spinner.stop();
-                                Log.error(`Could not find a table in database "${this.databaseConnection.database}" with name "${this.modelName}".`);
+                                Log.error(`Could not find a table in database "${this.databaseConnection.database}" with name "${modelName}".`);
                                 process.exit();
                             }
+
                         }
-                        else{
+                        else {
                             this.spinner.stop();
                             Log.error(response.error.title);
                             Log.yellow(response.error.message);
@@ -74,32 +93,46 @@ export class ModelService {
         });
     }
 
+    private getModelFromTable(table: Table, modelName: string): string {
+        let modelTemplate = new ModelTemplate();
 
-    //It will be called when found a table with same name as model in database.
-/*    private handleTableModel(databaseTableName: string){
+        modelTemplate.name = table.name;
+        modelTemplate.content = '';
 
-    //TODO
-    private createModel(){
+        table.columns.forEach((column) => {
+            let dataType, dataTypeValue = '';
 
-let text = 
-`import {Table, Column, Model, DataType, CreatedAt, UpdatedAt, HasMany } from 'sequelize-typescript';
-        
-@Table({
-    tableName: '${this.modelName}',
-    timestamps: true
-})
-export class ${this.modelName} extends Model<${this.modelName}> {
-    
-        
-}`;
-        
-        fs.writeFile(path.resolve(process.cwd(), config.NEWARepository.modelsPath, this.modelName + ".ts"), text, function (err) {
-            if (err) throw err;
-            console.log('Saved!');
-            
-        this.spinner.stop();
-        process.exit();
-          });
+            if (column.Type.indexOf('(') > -1) {
+                dataType = column.Type.toUpperCase().substr(0, column.Type.indexOf('('));
+                dataTypeValue = column.Type.substr(column.Type.indexOf('('));
+            }
+            else {
+                dataType = column.Type.toUpperCase();
+            }
 
-    }*/
+            let attributePrimaryKey = `${column.Key === 'PRI' ? ',' : ''}
+        ${column.Key == 'PRI' ? 'primaryKey: true,' : ''}
+        ${column.Extra == 'auto_increment' ? 'autoIncrement: true' : ''}
+    `;
+
+            let attribute = `
+    @Column({
+        type: ${MyslToSequelizeTypes[dataType].dataType}${dataTypeValue},
+        allowNull: ${column.Null == 'NO' ? false : true}${attributePrimaryKey.trim()}
+    })
+    ${column.Field}: ${MyslToSequelizeTypes[dataType].type};
+    `
+
+            modelTemplate.content += attribute;
+        });
+
+        modelTemplate.template = modelTemplate.template.replace('{{imports}}', '');
+        modelTemplate.template = modelTemplate.template.replace('{{tableName}}', modelTemplate.name);
+        modelTemplate.template = modelTemplate.template.replace(/{{name}}/g, modelName);
+        modelTemplate.template = modelTemplate.template.replace('{{content}}', modelTemplate.content);
+
+        return modelTemplate.template;
+
+    }
+
 }

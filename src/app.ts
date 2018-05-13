@@ -68,7 +68,7 @@ class App {
                     Log.yellow('Flag --e wasn´t detected, it will use "development" database config connection.')
                 }
 
-                this.modelService.newModel(commander.model, databaseEnviroment);
+                this.modelService.create(commander.model, databaseEnviroment);
 
             }
             else{
