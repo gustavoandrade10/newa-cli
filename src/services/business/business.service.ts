@@ -40,40 +40,40 @@ export class BusinessService {
                             if (repositoryResponse.success) {
 
                                 //Check if interface alread exists before create
-                                fs.exists(path.resolve(config.NEWARepository.businessPath.interfaces + 'I' + modelName + config.NEWARepository.businessPath.extension), (exists: boolean) => {
+                                fs.exists(path.resolve(config.NEWARepository.businessPaths.interfaces + 'I' + modelName + config.NEWARepository.businessPaths.extension), (exists: boolean) => {
 
                                     if (exists) {
                                         this.spinner.stop();
-                                        Log.highlight(`Already exists business interface @!"I${modelName}${config.NEWARepository.businessPath.extension}"!@ file.`);
+                                        Log.highlight(`Already exists business interface @!"I${modelName}${config.NEWARepository.businessPaths.extension}"!@ file.`);
                                     }
 
                                     else {
-                                        fs.writeFile(config.NEWARepository.businessPath.interfaces + 'I' + modelName + config.NEWARepository.businessPath.extension, iBusinessTemplate.replace(/{{modelName}}/g, modelName), (err: NodeJS.ErrnoException) => {
+                                        fs.writeFile(config.NEWARepository.businessPaths.interfaces + 'I' + modelName + config.NEWARepository.businessPaths.extension, iBusinessTemplate.replace(/{{modelName}}/g, modelName), (err: NodeJS.ErrnoException) => {
 
                                             if (err) {
                                                 this.spinner.stop();
                                                 Log.error('Failed to generate business.');
                                             }
                                             else {
-                                                Log.success('\n' + (config.NEWARepository.businessPath.interfaces + 'I' + modelName + config.NEWARepository.businessPath.extension));
+                                                Log.success('\n' + (config.NEWARepository.businessPaths.interfaces + 'I' + modelName + config.NEWARepository.businessPaths.extension));
 
                                                 //Check if classe already exists before create
-                                                fs.exists(path.resolve(config.NEWARepository.businessPath.main + modelName + config.NEWARepository.businessPath.extension), (exists: boolean) => {
+                                                fs.exists(path.resolve(config.NEWARepository.businessPaths.main + modelName + config.NEWARepository.businessPaths.extension), (exists: boolean) => {
 
                                                     if (exists) {
 
                                                         this.spinner.stop();
-                                                        Log.highlight(`Already exists business @!"${modelName}${config.NEWARepository.businessPath.extension}"!@ file.`);
+                                                        Log.highlight(`Already exists business @!"${modelName}${config.NEWARepository.businessPaths.extension}"!@ file.`);
                                                     }
                                                     else {
-                                                        fs.writeFile(config.NEWARepository.businessPath.main + modelName + config.NEWARepository.businessPath.extension, businessTemplate.replace(/{{modelName}}/g, modelName), (err: NodeJS.ErrnoException) => {
+                                                        fs.writeFile(config.NEWARepository.businessPaths.main + modelName + config.NEWARepository.businessPaths.extension, businessTemplate.replace(/{{modelName}}/g, modelName), (err: NodeJS.ErrnoException) => {
 
                                                             if (err) {
                                                                 this.spinner.stop();
                                                                 Log.error('Failed to generate business.');
                                                             }
                                                             else {
-                                                                Log.success((config.NEWARepository.businessPath.main + modelName + config.NEWARepository.businessPath.extension));
+                                                                Log.success((config.NEWARepository.businessPaths.main + modelName + config.NEWARepository.businessPaths.extension));
                                                                 this.addBusinessToBusinessFactory(modelName);
                                                             }
 
@@ -117,11 +117,11 @@ export class BusinessService {
 
     private addBusinessToBusinessFactory(modelName: string) {
 
-        fs.exists(path.resolve(config.NEWARepository.businessPath.factories, 'BusinessFactory.ts'), (exists: boolean) => {
+        fs.exists(path.resolve(config.NEWARepository.businessPaths.factories, 'BusinessFactory.ts'), (exists: boolean) => {
 
             if (exists) {
 
-                fs.readFile(path.resolve(config.NEWARepository.businessPath.factories, 'BusinessFactory.ts'), 'utf8', (err: NodeJS.ErrnoException, fileData) => {
+                fs.readFile(path.resolve(config.NEWARepository.businessPaths.factories, 'BusinessFactory.ts'), 'utf8', (err: NodeJS.ErrnoException, fileData) => {
 
                     // If method doesn´t exists
                     if (!(fileData.indexOf(`Get${modelName}Business()`) > -1)) {
@@ -130,9 +130,9 @@ export class BusinessService {
                         var lastBracketPos, businessFactoryClassePos,  breakLinePosAfterBusinessFactoryClasse = 0;
                             
                         //Add imports
-                        let modelBusinessPath = path.relative(path.resolve(config.NEWARepository.businessPath.factories),path.resolve(config.NEWARepository.businessPath.main)).replace(/\\/g,'/');
-                        let modelInterfaceBusinessPath = path.relative(path.resolve(config.NEWARepository.businessPath.factories),path.resolve(config.NEWARepository.businessPath.interfaces)).replace(/\\/g,'/');
-                        let modelRepositoryPath = path.relative(path.resolve(config.NEWARepository.businessPath.factories),path.resolve(config.NEWARepository.repositoryPath.main)).replace(/\\/g,'/');
+                        let modelBusinessPath = path.relative(path.resolve(config.NEWARepository.businessPaths.factories),path.resolve(config.NEWARepository.businessPaths.main)).replace(/\\/g,'/');
+                        let modelInterfaceBusinessPath = path.relative(path.resolve(config.NEWARepository.businessPaths.factories),path.resolve(config.NEWARepository.businessPaths.interfaces)).replace(/\\/g,'/');
+                        let modelRepositoryPath = path.relative(path.resolve(config.NEWARepository.businessPaths.factories),path.resolve(config.NEWARepository.repositoryPaths.main)).replace(/\\/g,'/');
                         
                         let imports: string = `import { ${modelName}Business } from "${modelBusinessPath}/${modelName}Business";${
                         BL}import { I${modelName}Business } from "${modelInterfaceBusinessPath}/I${modelName}Business";${
@@ -166,14 +166,14 @@ export class BusinessService {
                         fileData = fileData.slice(0, lastBracketPos) + fileData.slice(lastBracketPos).replace('}', insertMethod);
 
 
-                        fs.writeFile(path.resolve(config.NEWARepository.businessPath.factories, 'BusinessFactory.ts'), fileData, 'utf8', (err: NodeJS.ErrnoException) => {
+                        fs.writeFile(path.resolve(config.NEWARepository.businessPaths.factories, 'BusinessFactory.ts'), fileData, 'utf8', (err: NodeJS.ErrnoException) => {
                             this.spinner.stop();
 
                             if (err) {
                                 process.exit();
                             }
                             else {
-                                Log.success(config.NEWARepository.businessPath.factories + 'BusinessFactory.ts');
+                                Log.success(config.NEWARepository.businessPaths.factories + 'BusinessFactory.ts');
                             }
 
                         });

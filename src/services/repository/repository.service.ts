@@ -35,33 +35,33 @@ export class RepositoryService {
                     if (response.success) {
 
                         //Check if interface alread exists before create
-                        fs.exists(path.resolve(config.NEWARepository.repositoryPath.interfaces + 'I' + modelName + config.NEWARepository.repositoryPath.extension), (exists: boolean) => {
+                        fs.exists(path.resolve(config.NEWARepository.repositoryPaths.interfaces + 'I' + modelName + config.NEWARepository.repositoryPaths.extension), (exists: boolean) => {
 
                             if (exists) {
                                 this.spinner.stop();
-                                Log.highlight(`Already exists repository interface @!"${modelName}${config.NEWARepository.repositoryPath.extension}"!@ file.`);
+                                Log.highlight(`Already exists repository interface @!"${modelName}${config.NEWARepository.repositoryPaths.extension}"!@ file.`);
                             }
 
                             else {
-                                fs.writeFile(config.NEWARepository.repositoryPath.interfaces + 'I' + modelName + config.NEWARepository.repositoryPath.extension, iRepositoryTemplate.replace(/{{modelName}}/g, modelName), (err: NodeJS.ErrnoException) => {
+                                fs.writeFile(config.NEWARepository.repositoryPaths.interfaces + 'I' + modelName + config.NEWARepository.repositoryPaths.extension, iRepositoryTemplate.replace(/{{modelName}}/g, modelName), (err: NodeJS.ErrnoException) => {
 
                                     if (err) {
                                         this.spinner.stop();
                                         Log.error('Failed to generate repository.');
                                     }
                                     else {
-                                        Log.success('\n'+(config.NEWARepository.repositoryPath.interfaces + 'I' + modelName + config.NEWARepository.repositoryPath.extension));
+                                        Log.success('\n'+(config.NEWARepository.repositoryPaths.interfaces + 'I' + modelName + config.NEWARepository.repositoryPaths.extension));
 
                                         //Check if classe alread exists before create
-                                        fs.exists(path.resolve(config.NEWARepository.repositoryPath.main + modelName + config.NEWARepository.repositoryPath.extension), (exists: boolean) => {
+                                        fs.exists(path.resolve(config.NEWARepository.repositoryPaths.main + modelName + config.NEWARepository.repositoryPaths.extension), (exists: boolean) => {
 
                                             if (exists) {
                                                 
                                                 this.spinner.stop();
-                                                Log.highlight(`Already exists repository @!"${modelName}${config.NEWARepository.repositoryPath.extension}"!@ file.`);
+                                                Log.highlight(`Already exists repository @!"${modelName}${config.NEWARepository.repositoryPaths.extension}"!@ file.`);
                                             }
                                             else {
-                                                fs.writeFile(config.NEWARepository.repositoryPath.main + modelName + config.NEWARepository.repositoryPath.extension, repositoryTemplate.replace(/{{modelName}}/g, modelName), (err: NodeJS.ErrnoException) => {
+                                                fs.writeFile(config.NEWARepository.repositoryPaths.main + modelName + config.NEWARepository.repositoryPaths.extension, repositoryTemplate.replace(/{{modelName}}/g, modelName), (err: NodeJS.ErrnoException) => {
 
                                                     this.spinner.stop();
 
@@ -69,7 +69,7 @@ export class RepositoryService {
                                                         Log.error('Failed to generate repository.');
                                                     }
                                                     else {
-                                                        Log.success((config.NEWARepository.repositoryPath.main + modelName + config.NEWARepository.repositoryPath.extension));
+                                                        Log.success((config.NEWARepository.repositoryPaths.main + modelName + config.NEWARepository.repositoryPaths.extension));
                                                     }
 
                                                     process.exit();
