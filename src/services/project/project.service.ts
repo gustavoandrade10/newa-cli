@@ -15,7 +15,7 @@ export class ProjectService {
         this.spinner = new Ora();
     }
 
-    create = (projectName: string, installDependencies: boolean) => {
+    create(projectName: string, installDependencies: boolean){
         this.projectName = projectName;
 
         fs.exists(path.resolve(process.cwd(), projectName), (exists: boolean) => {

@@ -1,4 +1,4 @@
-export var baseModelTemplate = 
+export var modelTemplate = 
 `import { Table, Column, Model, DataType{{imports}} } from 'sequelize-typescript';
 
 @Table({

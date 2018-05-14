@@ -7,7 +7,7 @@ import { IDatabaseConnection } from '../database/interfaces/IDatabaseConnection'
 import { config } from '../../config/config';
 import { BaseResponse } from '../../utils/BaseResponse';
 import { Table } from '../database/classes/table';
-import { ModelTemplate } from './classes/modelTemplate';
+import { Model } from './classes/model';
 import { MyslToSequelizeTypes } from './constants/MyslToSequelizeTypes';
 import { validCreatedDateFields, validUpdatedDateFields } from './constants/validCreatedUpdatedDateFields';
 
@@ -21,7 +21,7 @@ export class ModelService {
         this.database = new DatabaseService();
     }
 
-    create = (modelName: string, tableName: string, dataBaseConfig: string) => {
+    create(modelName: string, tableName: string, dataBaseConfig: string){
 
         this.spinner.text = `Generating model(${modelName}) ...`;
         this.spinner.color = 'yellow';
@@ -54,7 +54,7 @@ export class ModelService {
                                 modelName = modelName[0].toUpperCase() + modelName.substr(1);
                                 let model = this.getModelFromTable(modelTable, modelName);
 
-                                fs.writeFile(path.resolve(config.NEWARepository.modelsPath, modelName + ".ts"), model, (err) => {
+                                fs.writeFile(path.resolve(config.NEWARepository.modelsPath, modelName + ".ts"), model, (err: NodeJS.ErrnoException) => {
                                     
                                     this.spinner.stop();
 
@@ -100,7 +100,7 @@ export class ModelService {
     }
 
     private getModelFromTable(table: Table, modelName: string): string {
-        let modelTemplate = new ModelTemplate();
+        let modelTemplate = new Model();
 
         modelTemplate.tableName = table.name;
         modelTemplate.name = modelName;

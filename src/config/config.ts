@@ -4,6 +4,15 @@ export const config = {
         name: 'NodeExpressWebApi',
         databaseConfigPath: 'src/Config/config.json',
         modelsPath: 'src/Models/Database/',
+        repositoryPath: {
+            interfaces: 'src/Repository/Interfaces/',
+            main: 'src/Repository/Repositories/',
+            extension: 'Repository.ts'
+        },
+        businessPath: {
+            interfaces: 'src/Business/Interfaces/',
+            main: 'src/Business/Rules/'
+        },
         baseFoldersStructure: [
             'src/models',
             'src/repository',

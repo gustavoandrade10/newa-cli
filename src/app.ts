@@ -8,16 +8,23 @@ import { Validator } from './utils/validator';
 import { ProjectService } from './services/project/project.service';
 import { ModelService } from './services/model/model.service';
 import { ValidateService } from './services/validate/validate.service';
+import { BusinessService } from './services/business/business.service';
+import { RepositoryService } from './services/repository/repository.service';
 
 class App {
 
+    private validateService: ValidateService;
     private projectService: ProjectService;
     private modelService: ModelService;
-    private validateService: ValidateService;
+    private repositoryService: RepositoryService;
+    private businessService: BusinessService;
+
     constructor() {
+        this.validateService = new ValidateService();
         this.projectService = new ProjectService();
         this.modelService = new ModelService();
-        this.validateService = new ValidateService();
+        this.repositoryService = new RepositoryService();
+        this.businessService = new BusinessService();
         this.commands();
     }
 
@@ -38,6 +45,8 @@ class App {
             .option('-g model, generate model, --generate model <n>', 'Creates a model')
             .option('--e , --environment <n>', 'Enviroment commad')
             .option('--t , --table <n>', 'Table for model')
+            .option('-g repository, generate repository, --generate repository <n>', 'Creates repository base on model')
+            .option('-g business, generate business, --generate business <n>', 'Creates business base on model')
             .parse(process.argv);
 
         //Execute tasks
@@ -67,7 +76,29 @@ class App {
                 this.modelService.create(commander.model, commander.table, databaseEnviroment);
 
             }
-            else{
+            else {
+                Log.error('You are not in a root "NEWA" project directory.');
+                Log.highlight('Run: @!"newa new your-project-name"!@ to create a new one.');
+            }
+        } 
+        else if (commander.repository) {
+
+            if (this.validateService.isInsideNEWAProject()) {
+
+                this.repositoryService.create(commander.repository);
+            }
+            else {
+                Log.error('You are not in a root "NEWA" project directory.');
+                Log.highlight('Run: @!"newa new your-project-name"!@ to create a new one.');
+            }
+        }
+        else if (commander.business) {
+
+            if (this.validateService.isInsideNEWAProject()) {
+
+                this.businessService.create(commander.business);
+            }
+            else {
                 Log.error('You are not in a root "NEWA" project directory.');
                 Log.highlight('Run: @!"newa new your-project-name"!@ to create a new one.');
             }
