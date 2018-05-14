@@ -39,7 +39,7 @@ export class RepositoryService {
 
                             if (exists) {
                                 this.spinner.stop();
-                                Log.highlight(`Already exists repository interface @!"${modelName}"!@.`);
+                                Log.highlight(`Already exists repository interface @!"${modelName}${config.NEWARepository.repositoryPath.extension}"!@ file.`);
                             }
 
                             else {
@@ -50,7 +50,7 @@ export class RepositoryService {
                                         Log.error('Failed to generate repository.');
                                     }
                                     else {
-                                        Log.success((config.NEWARepository.repositoryPath.interfaces + 'I' + modelName + config.NEWARepository.repositoryPath.extension));
+                                        Log.success('\n'+(config.NEWARepository.repositoryPath.interfaces + 'I' + modelName + config.NEWARepository.repositoryPath.extension));
 
                                         //Check if classe alread exists before create
                                         fs.exists(path.resolve(config.NEWARepository.repositoryPath.main + modelName + config.NEWARepository.repositoryPath.extension), (exists: boolean) => {
@@ -58,7 +58,7 @@ export class RepositoryService {
                                             if (exists) {
                                                 
                                                 this.spinner.stop();
-                                                Log.highlight(`Already exists repository @!"${modelName}"!@.`);
+                                                Log.highlight(`Already exists repository @!"${modelName}${config.NEWARepository.repositoryPath.extension}"!@ file.`);
                                             }
                                             else {
                                                 fs.writeFile(config.NEWARepository.repositoryPath.main + modelName + config.NEWARepository.repositoryPath.extension, repositoryTemplate.replace(/{{modelName}}/g, modelName), (err: NodeJS.ErrnoException) => {
@@ -87,6 +87,7 @@ export class RepositoryService {
 
                     }
                     else {
+                        this.spinner.stop();
                         Log.error(response.error.title);
                         Log.highlight(response.error.message);
                     }
@@ -94,6 +95,7 @@ export class RepositoryService {
 
             }
             else {
+                this.spinner.stop();
                 Log.error(response.error.title);
                 Log.highlight(response.error.message);
             }

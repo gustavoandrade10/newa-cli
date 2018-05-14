@@ -27,6 +27,7 @@ export class ValidateService {
         return response;
     }
 
+    // Checks if a model exists and if it is valid (has 'export class modelName')
     modelAndClassExists(modelName: string, callback: Function){
 
         this.verifyFileAndClass(path.resolve(config.NEWARepository.modelsPath), modelName + '.ts', modelName, (response:BaseResponse) => {
@@ -45,6 +46,27 @@ export class ValidateService {
 
     }
 
+     // Checks if a repository exists and if it is valid (has 'export class modelNameRepository')
+    repositoryAndClassExists(modelName: string, callback: Function){
+
+        this.verifyFileAndClass(path.resolve(config.NEWARepository.repositoryPath.main), modelName + config.NEWARepository.repositoryPath.extension, modelName, (response:BaseResponse) => {
+            
+            if(response.error && response.error.title === 'FILE_NOT_FOUND'){
+                response.error.title = 'REPOSITORY_FILE_NOT_FOUND';
+                response.error.message = `Could not find repository @!${modelName}Repository.ts!@ file in ${config.NEWARepository.repositoryPath.main}`;
+            }
+            else if(response.error && response.error.title === 'FILE_CLASS_NOT_FOUND'){
+                response.error.title = 'INVALID_REPOSITORY_FILE';
+                response.error.message = `Could not find @!"export class ${modelName}Repository"!@ member on repository @!${modelName}Repository.ts!@ file in ${config.NEWARepository.repositoryPath.main}`;
+            }
+
+            callback(response);
+        })
+
+    }
+
+
+    //Check if repository default folder contains IBaseRepository, BaseRepository classes;
     hasRepositoryBaseClasseInterface(callback: Function){
         let response = new BaseResponse();
 
@@ -67,6 +89,7 @@ export class ValidateService {
       
     }
 
+     //Check if business default folder contains IBaseBusiness, BaseBusiness classes;
     hasBusinessBaseClasseInterface(callback: Function){
         let response = new BaseResponse();
 

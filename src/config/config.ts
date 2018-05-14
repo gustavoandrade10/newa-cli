@@ -11,7 +11,9 @@ export const config = {
         },
         businessPath: {
             interfaces: 'src/Business/Interfaces/',
-            main: 'src/Business/Rules/'
+            main: 'src/Business/Rules/',
+            factories: 'src/Business/Factories/',
+            extension: 'Business.ts'
         },
         baseFoldersStructure: [
             'src/models',
