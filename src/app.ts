@@ -63,17 +63,12 @@ class App {
 
                 let databaseEnviroment = commander.environment != undefined ? commander.environment : 'default';
 
-                // if users don´t uses flag --e or --environment with generate model flag
-                if (!commander.environment) {
-                    Log.yellow('Flag --e wasn´t detected, it will use "development" database config connection.')
-                }
-
                 this.modelService.create(commander.model, databaseEnviroment);
 
             }
             else{
-                Log.error('You are not inside of a "NEWA" project.');
-                Log.yellow('Run: newa new "your-project-name" to create a new one.');
+                Log.error('You are not in a root "NEWA"project directory.');
+                Log.highlight('Run: @!"newa new your-project-name"!@ to create a new one.');
             }
         }
         else {

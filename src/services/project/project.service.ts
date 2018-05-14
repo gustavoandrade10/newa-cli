@@ -21,11 +21,11 @@ export class ProjectService {
         fs.exists(path.resolve(process.cwd(), projectName), (exists: boolean) => {
 
             if (exists) {
-                Log.error('Already exists an folder with name "' + this.projectName + '"');
+                Log.highlight('Already exists a project with name @!"' + this.projectName + '"!@');
             }
             else {
 
-                this.spinner.text = `Creating Project(${this.projectName})`;
+                this.spinner.text = `Creating Project(@!${this.projectName}!@)`;
                 this.spinner.color = 'yellow';
                 this.spinner.start();
 
@@ -63,19 +63,18 @@ export class ProjectService {
 
                     if (!err) {
                         Log.success('\n Dependencies installed successfully!.');
-                        Log.info('\n To serve the application run:');
-                        Log.yellow(` cd ${this.projectName} && gulp serve`);
+                        Log.highlight(`\n To serve the application run:  @!cd ${this.projectName} && gulp serve!@`);
                     }
                     else {
-                        Log.error(`\n Could not install dependencies try running cd ${this.projectName} && npm install.`);
+                        Log.highlight(`\n Could not install dependencies try running @!cd ${this.projectName} && npm install.!@`);
                     }
                 });
             }, 150)
 
         }
         else{
-            Log.yellow(` Run "cd ${this.projectName} && npm install" to install project dependecies. `);
-            Log.yellow(` Then run "gulp serve" to serve the application. `);
+            Log.highlight(` Run @!"cd ${this.projectName} && npm install"!@ to install project dependencies. `);
+            Log.highlight(` Then run @!"gulp serve"!@ to serve the application. `);
         }
 
     }

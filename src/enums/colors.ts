@@ -8,6 +8,15 @@ export enum Colors {
     Cyan = '\x1b[36m%s\x1b[0m',
     White = '\x1b[37m%s\x1b[0m',
 
+    BlackNoReset = '\x1b[30m',
+    RedNoReset = '\x1b[31m',
+    GreenNoReset = '\x1b[32m',
+    YellowNoReset = '\x1b[33m',
+    BlueNoReset = '\x1b[34m',
+    MagentaNoReset = '\x1b[35m',
+    CyanNoReset = '\x1b[36m',
+    WhiteNoReset = '\x1b[37m',
+
     Reset = '\x1b[0m',
     Bright = '\x1b[1m',
     Dim = '\x1b[2m',

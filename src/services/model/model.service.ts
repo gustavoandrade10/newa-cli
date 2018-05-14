@@ -81,14 +81,14 @@ export class ModelService {
                 else {
                     this.spinner.stop();
                     Log.error(`Could not find the enviroment "${dataBaseConfig}" on database config file.`);
-                    Log.yellow(` database config file path to search: ${path.resolve(process.cwd(), config.NEWARepository.databaseConfigPath)}`);
+                    Log.highlight(` database config file path to search: @!${path.resolve(process.cwd(), config.NEWARepository.databaseConfigPath)}!@`);
                 }
 
             }
             else {
                 this.spinner.stop();
                 Log.error(`The database config json file is empty`);
-                Log.yellow(` database config file path to search: ${path.resolve(process.cwd(), config.NEWARepository.databaseConfigPath)}`);
+                Log.highlight(` database config file path to search: @!${path.resolve(process.cwd(), config.NEWARepository.databaseConfigPath)}!@`);
             }
         });
     }

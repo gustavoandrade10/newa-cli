@@ -21,6 +21,18 @@ export class Log {
         console.log(Colors.Yellow, message);
     }
 
+    // use @! text to highlight !@ to highlight a text
+    static highlight(message: string){
+        
+        while(message.indexOf('@!') > -1 || message.indexOf('!@') > -1){
+
+            message = message.replace('@!', Colors.YellowNoReset);
+            message = message.replace('!@', Colors.WhiteNoReset);
+        }
+
+        console.log(message, Colors.Reset);
+    }
+
     static showLogo(){
         console.log(Colors.Yellow, LOGO);
     }
