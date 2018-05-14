@@ -9,6 +9,7 @@ import { BaseResponse } from '../../utils/BaseResponse';
 import { Table } from '../database/classes/table';
 import { ModelTemplate } from './classes/modelTemplate';
 import { MyslToSequelizeTypes } from './constants/MyslToSequelizeTypes';
+import { validCreatedDateFields, validUpdatedDateFields } from './constants/validCreatedUpdatedDateFields';
 
 export class ModelService {
 
@@ -41,24 +42,24 @@ export class ModelService {
 
                         if (response.success) {
 
-
                             let modelTable = this.database.listOfTables.find((table) => table.name == modelName);
 
                             if (modelTable) {
-                               
-                                modelName =  modelName[0].toUpperCase() + modelName.substr(1);
+
+                                modelName = modelName[0].toUpperCase() + modelName.substr(1);
                                 let model = this.getModelFromTable(modelTable, modelName);
 
-                                fs.writeFile(path.resolve(process.cwd(), config.NEWARepository.modelsPath, modelName + ".ts"), model, (err) => {
-                                    if (err){
-                                        Log.error('Error to generate model.');
-                                    }
-                                    else{
-                                        Log.success("\nSuccess");
-                                        Log.success(path.resolve(config.NEWARepository.modelsPath, modelName + ".ts"));
-                                    }
+                                fs.writeFile(path.resolve(config.NEWARepository.modelsPath, modelName + ".ts"), model, (err) => {
                                     
                                     this.spinner.stop();
+
+                                    if (err) {
+                                        Log.error('Error to generate model.');
+                                    }
+                                    else {
+                                        Log.success((config.NEWARepository.modelsPath + modelName + '.ts'));
+                                    }
+
                                     process.exit();
                                 });
                             }
@@ -100,7 +101,9 @@ export class ModelService {
         modelTemplate.content = '';
 
         table.columns.forEach((column) => {
-            let dataType, dataTypeValue = '';
+            let dataType, attribute, dataTypeValue = '';
+            const N = "\n"; //Break line
+            const T = "\t" //Tab line
 
             if (column.Type.indexOf('(') > -1) {
                 dataType = column.Type.toUpperCase().substr(0, column.Type.indexOf('('));
@@ -110,23 +113,42 @@ export class ModelService {
                 dataType = column.Type.toUpperCase();
             }
 
-            let attributePrimaryKey = `${column.Key === 'PRI' ? ',' : ''}
-        ${column.Key == 'PRI' ? 'primaryKey: true,' : ''}
-        ${column.Extra == 'auto_increment' ? 'autoIncrement: true' : ''}
-    `;
+            if (validCreatedDateFields[column.Field.toLowerCase()]) {
+                
+                attribute = `${
+                    N+T}@CreatedAt${
+                    N+T}${column.Field}: ${MyslToSequelizeTypes[dataType].type};
+                `
+                modelTemplate.imports += ', CreatedAt';
+            }
+            else if(validUpdatedDateFields[column.Field.toLowerCase()]){
+                attribute = `${
+                    N+T}@UpdatedAt${
+                    N+T}${column.Field}: ${MyslToSequelizeTypes[dataType].type};
+                `
+                modelTemplate.imports += ', UpdatedAt';
+            }
+            else {
 
-            let attribute = `
-    @Column({
-        type: ${MyslToSequelizeTypes[dataType].dataType}${dataTypeValue},
-        allowNull: ${column.Null == 'NO' ? false : true}${attributePrimaryKey.trim()}
-    })
-    ${column.Field}: ${MyslToSequelizeTypes[dataType].type};
-    `
+                let attributePrimaryKey = `${column.Key === 'PRI' ? ',' : ''}${
+                    N+T+T}${column.Key == 'PRI' ? 'primaryKey: true,' : ''}${
+                    N+T+T}${column.Extra == 'auto_increment' ? 'autoIncrement: true' : ''}
+                `;
+
+                attribute = `${
+                    N+T}@Column({${
+                        N+T+T}type: ${MyslToSequelizeTypes[dataType].dataType}${dataTypeValue},${
+                        N+T+T}allowNull: ${column.Null == 'NO' ? false : true}${attributePrimaryKey.trim()}${
+                    N+T}})${
+                    N+T}${column.Field}: ${MyslToSequelizeTypes[dataType].type};
+                `
+            }
+
 
             modelTemplate.content += attribute;
         });
 
-        modelTemplate.template = modelTemplate.template.replace('{{imports}}', '');
+        modelTemplate.template = modelTemplate.template.replace('{{imports}}', modelTemplate.imports);
         modelTemplate.template = modelTemplate.template.replace('{{tableName}}', modelTemplate.name);
         modelTemplate.template = modelTemplate.template.replace(/{{name}}/g, modelName);
         modelTemplate.template = modelTemplate.template.replace('{{content}}', modelTemplate.content);

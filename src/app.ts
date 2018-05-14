@@ -67,7 +67,7 @@ class App {
 
             }
             else{
-                Log.error('You are not in a root "NEWA"project directory.');
+                Log.error('You are not in a root "NEWA" project directory.');
                 Log.highlight('Run: @!"newa new your-project-name"!@ to create a new one.');
             }
         }
