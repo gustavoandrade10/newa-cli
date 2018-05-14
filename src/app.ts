@@ -37,6 +37,7 @@ class App {
             })
             .option('-g model, generate model, --generate model <n>', 'Creates a model')
             .option('--e , --environment <n>', 'Enviroment commad')
+            .option('--t , --table <n>', 'Table for model')
             .parse(process.argv);
 
         //Execute tasks
@@ -63,7 +64,7 @@ class App {
 
                 let databaseEnviroment = commander.environment != undefined ? commander.environment : 'default';
 
-                this.modelService.create(commander.model, databaseEnviroment);
+                this.modelService.create(commander.model, commander.table, databaseEnviroment);
 
             }
             else{

@@ -21,13 +21,13 @@ export class ModelService {
         this.database = new DatabaseService();
     }
 
-    create = (modelName: string, dataBaseConfig: string) => {
+    create = (modelName: string, tableName: string, dataBaseConfig: string) => {
 
         this.spinner.text = `Generating model(${modelName}) ...`;
         this.spinner.color = 'yellow';
         this.spinner.start();
 
-        fs.readFile(path.resolve(process.cwd(), config.NEWARepository.databaseConfigPath), 'utf8', (err: NodeJS.ErrnoException, data: Buffer) => {
+        fs.readFile(path.resolve(config.NEWARepository.databaseConfigPath), 'utf8', (err: NodeJS.ErrnoException, data: Buffer) => {
 
             let JsonDatabaseConfig = JSON.parse(data.toString());
 
@@ -41,8 +41,13 @@ export class ModelService {
                     this.database.connect(this.databaseConnection, (response: BaseResponse) => {
 
                         if (response.success) {
+                            let modelTable;
 
-                            let modelTable = this.database.listOfTables.find((table) => table.name == modelName);
+                            //If user provides table name, then use it otherwise use modelName.
+                            if(tableName)
+                                modelTable = this.database.listOfTables.find((table) => table.name == tableName);
+                            else
+                                modelTable = this.database.listOfTables.find((table) => table.name == modelName);
 
                             if (modelTable) {
 
@@ -97,7 +102,8 @@ export class ModelService {
     private getModelFromTable(table: Table, modelName: string): string {
         let modelTemplate = new ModelTemplate();
 
-        modelTemplate.name = table.name;
+        modelTemplate.tableName = table.name;
+        modelTemplate.name = modelName;
         modelTemplate.content = '';
 
         table.columns.forEach((column) => {
@@ -144,13 +150,12 @@ export class ModelService {
                 `
             }
 
-
             modelTemplate.content += attribute;
         });
 
         modelTemplate.template = modelTemplate.template.replace('{{imports}}', modelTemplate.imports);
-        modelTemplate.template = modelTemplate.template.replace('{{tableName}}', modelTemplate.name);
-        modelTemplate.template = modelTemplate.template.replace(/{{name}}/g, modelName);
+        modelTemplate.template = modelTemplate.template.replace('{{tableName}}', modelTemplate.tableName);
+        modelTemplate.template = modelTemplate.template.replace(/{{name}}/g, modelTemplate.name);
         modelTemplate.template = modelTemplate.template.replace('{{content}}', modelTemplate.content);
 
         return modelTemplate.template;
