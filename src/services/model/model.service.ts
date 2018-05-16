@@ -21,7 +21,7 @@ export class ModelService {
         this.database = new DatabaseService();
     }
 
-    create(modelName: string, tableName: string, dataBaseConfig: string){
+    create(modelName: string, tableName: string, dataBaseConfig: string) {
 
         this.spinner.text = `Generating model(${modelName}) ...`;
         this.spinner.color = 'yellow';
@@ -43,8 +43,8 @@ export class ModelService {
                         if (response.success) {
                             let modelTable;
 
-                            //If user provides table name, then use it otherwise use modelName.
-                            if(tableName)
+                            //If user provides table name   , then use it otherwise use modelName.
+                            if (tableName)
                                 modelTable = this.database.listOfTables.find((table) => table.name == tableName);
                             else
                                 modelTable = this.database.listOfTables.find((table) => table.name == modelName);
@@ -55,7 +55,7 @@ export class ModelService {
                                 let model = this.getModelFromTable(modelTable, modelName);
 
                                 fs.writeFile(path.resolve(config.NEWARepository.modelsPath, modelName + ".ts"), model, (err: NodeJS.ErrnoException) => {
-                                    
+
                                     this.spinner.stop();
 
                                     if (err) {
@@ -71,7 +71,10 @@ export class ModelService {
                             else {
 
                                 this.spinner.stop();
-                                Log.error(`Could not find a table in database "${this.databaseConnection.database}" with name "${modelName}".`);
+                                if(tableName)
+                                    Log.error(`Could not find a table in database "${this.databaseConnection.database}" with name "${tableName}".`);
+                                else
+                                    Log.error(`Could not find a table in database "${this.databaseConnection.database}" with name "${modelName}".`);
                                 process.exit();
                             }
 
@@ -111,46 +114,53 @@ export class ModelService {
             const N = "\n"; //Break line
             const T = "\t" //Tab line
 
-            if (column.Type.indexOf('(') > -1) {
-                dataType = column.Type.toUpperCase().substr(0, column.Type.indexOf('('));
-                dataTypeValue = column.Type.substr(column.Type.indexOf('('));
-            }
-            else {
-                dataType = column.Type.toUpperCase();
-            }
+            try {
 
-            if (validCreatedDateFields[column.Field.toLowerCase()]) {
-                
-                attribute = `${
-                    N+T}@CreatedAt${
-                    N+T}${column.Field}: ${MyslToSequelizeTypes[dataType].type};
-                `
-                modelTemplate.imports += ', CreatedAt';
-            }
-            else if(validUpdatedDateFields[column.Field.toLowerCase()]){
-                attribute = `${
-                    N+T}@UpdatedAt${
-                    N+T}${column.Field}: ${MyslToSequelizeTypes[dataType].type};
-                `
-                modelTemplate.imports += ', UpdatedAt';
-            }
-            else {
+                if (column.Type.indexOf('(') > -1) {
+                    dataType = column.Type.toUpperCase().substr(0, column.Type.indexOf('('));
+                    dataTypeValue = column.Type.substr(column.Type.indexOf('('));
+                }
+                else {
+                    dataType = column.Type.toUpperCase();
+                }
 
-                let attributePrimaryKey = `${column.Key === 'PRI' ? ',' : ''}${
-                    N+T+T}${column.Key == 'PRI' ? 'primaryKey: true,' : ''}${
-                    N+T+T}${column.Extra == 'auto_increment' ? 'autoIncrement: true' : ''}
+                if (validCreatedDateFields[column.Field.toLowerCase()]) {
+
+                    attribute = `${
+                        N + T}@CreatedAt${
+                        N + T}${column.Field}: ${MyslToSequelizeTypes[dataType].type};
+                `
+                    modelTemplate.imports += ', CreatedAt';
+                }
+                else if (validUpdatedDateFields[column.Field.toLowerCase()]) {
+                    attribute = `${
+                        N + T}@UpdatedAt${
+                        N + T}${column.Field}: ${MyslToSequelizeTypes[dataType].type};
+                `
+                    modelTemplate.imports += ', UpdatedAt';
+                }
+                else {
+
+                    let attributePrimaryKey = `${column.Key === 'PRI' ? ',' : ''}${
+                        N + T + T}${column.Key == 'PRI' ? 'primaryKey: true,' : ''}${
+                        N + T + T}${column.Extra == 'auto_increment' ? 'autoIncrement: true' : ''}
                 `;
 
-                attribute = `${
-                    N+T}@Column({${
-                        N+T+T}type: ${MyslToSequelizeTypes[dataType].dataType}${dataTypeValue},${
-                        N+T+T}allowNull: ${column.Null == 'NO' ? false : true}${attributePrimaryKey.trim()}${
-                    N+T}})${
-                    N+T}${column.Field}: ${MyslToSequelizeTypes[dataType].type};
+                    attribute = `${
+                        N + T}@Column({${
+                        N + T + T}type: ${MyslToSequelizeTypes[dataType].dataType}${dataTypeValue},${
+                        N + T + T}allowNull: ${column.Null == 'NO' ? false : true}${attributePrimaryKey.trim()}${
+                        N + T}})${
+                        N + T}${column.Field}: ${MyslToSequelizeTypes[dataType].type};
                 `
-            }
+                }
 
-            modelTemplate.content += attribute;
+                modelTemplate.content += attribute;
+
+
+            } catch (e) {
+                //handle error here
+            }
         });
 
         modelTemplate.template = modelTemplate.template.replace('{{imports}}', modelTemplate.imports);

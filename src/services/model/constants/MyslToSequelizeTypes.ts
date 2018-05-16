@@ -10,6 +10,11 @@ export let  MyslToSequelizeTypes: any = {
         type: 'number'
     },
 
+    'TINYINT': {
+        dataType: 'DataType.TINYINT',
+        type: 'number'
+    },
+
     'SHORT': {
         dataType: 'DataType.SMALLINT',
         type: 'number'
@@ -37,6 +42,11 @@ export let  MyslToSequelizeTypes: any = {
 
     'INT24': {
         dataType: 'DataType.MEDIUMINT',
+        type: 'number'
+    },
+
+    'BIGINT': {
+        dataType: 'DataType.BIGINT',
         type: 'number'
     },
 
@@ -96,6 +106,11 @@ export let  MyslToSequelizeTypes: any = {
     },
 
     'TEXT': {
+        dataType: 'DataType.TEXT',
+        type: 'string'
+    },
+
+    'LONGTEXT': {
         dataType: 'DataType.TEXT',
         type: 'string'
     },
