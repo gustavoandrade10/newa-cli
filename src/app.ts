@@ -3,6 +3,7 @@ import * as program from 'commander';
 import * as inquirer from 'inquirer';
 import { Log } from './utils/log';
 import { Validator } from './utils/validator';
+import * as json from '../package.json'
 
 // import services
 import { ProjectService } from './services/project/project.service';
@@ -11,7 +12,7 @@ import { ValidateService } from './services/validate/validate.service';
 import { BusinessService } from './services/business/business.service';
 import { RepositoryService } from './services/repository/repository.service';
 import { ControllerService } from './services/controller/controller.service';
-import { HELP } from './constants/help';
+import { MODELOPTIONS } from './constants/modelOptionsHelp';
 
 class App {
 
@@ -35,8 +36,8 @@ class App {
     commands(): void {
 
         program
-            .version('1.0.0')
-            .description('Cli for Node Express Web Api (NEWA) with typescript')
+            .version((<any>json).version)
+            .description((<any>json).description)
 
         // Creates a project
         program
@@ -60,29 +61,29 @@ class App {
 
                     });
                 }
-                else{
+                else {
                     Log.error('Project name may only include letters, numbers, hyphen and underscore.');
                 }
 
             });
 
-        
+
         // Main command to generate
         program
-            .command('generate')
+            .command('generate', 'Generates a new (model,repository,business or controller)', { noHelp: true })
             .alias('g')
-            .description('Generates a new (model,repository,business or controller)')
-        
-        if(process.argv[2] == 'generate' || process.argv[2] == 'g')
+
+        if (process.argv[2] == 'generate' || process.argv[2] == 'g')
             process.argv.splice(2, 1);
 
+        // Generate sub commands
         // Generates a model
         program
             .command('model <modelname>')
             .alias('m')
-            .option('--e , --environment <environment>', 'Sets the config database enviroment to use.')
-            .option('--t , --table <tablename>', 'Sets the name of table to use')
             .description('Generates a new model')
+            .option('--env , --environment <environment>', 'Sets the config database enviroment to use.')
+            .option('--t , --table <tablename>', 'Sets the name of table to use')
             .action((modelname, options) => {
 
                 if (this.validateService.isInsideNEWAProject()) {
@@ -151,13 +152,18 @@ class App {
                 }
 
             });
-        
+
         // Invalid commands
         program
             .on('command:*', () => {
                 Log.error('Command not found.');
             });
-        
+
+        program
+            .on('--help', () => {
+                Log.info(MODELOPTIONS);
+            });
+
         program.parse(process.argv);
 
     }
