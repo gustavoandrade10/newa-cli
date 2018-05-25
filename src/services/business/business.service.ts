@@ -15,7 +15,7 @@ export class BusinessService {
     private spinner: Ora;
     private validateService: ValidateService;
     constructor() {
-        this.spinner = new Ora();
+        this.spinner = new Ora({spinner: 'dots2'});
         this.validateService = new ValidateService();
     }
 
@@ -23,8 +23,7 @@ export class BusinessService {
 
         modelName = modelName[0].toUpperCase() + modelName.substr(1);
 
-        this.spinner.text = `Generating business(${modelName}Business) ...`;
-        this.spinner.color = 'yellow';
+        this.spinner.text = `Generating ${modelName}Business...`;
         this.spinner.start();
 
         this.validateService.hasBusinessBaseClasseInterface((response: BaseResponse) => {
@@ -39,44 +38,66 @@ export class BusinessService {
 
                         // Check if repository exits and if it is valid "empty files won´t work"
                         this.validateService.repositoryAndClassExists(modelName, (repositoryResponse: BaseResponse) => {
+
                             if (repositoryResponse.success) {
+                                let generatedRepositoryInterface = false;
 
                                 //Check if interface alread exists before create
                                 fs.exists(path.resolve(config.NEWARepository.businessPaths.interfaces + 'I' + modelName + config.NEWARepository.businessPaths.extension), (exists: boolean) => {
 
                                     if (exists) {
-                                        this.spinner.stop();
-                                        Log.highlight(`Already exists business interface @!"I${modelName}${config.NEWARepository.businessPaths.extension}"!@ file.`);
+                                        this.spinner.fail();
+                                        Log.highlight(`Already exists business interface file @!I${modelName}${config.NEWARepository.businessPaths.extension}!@.`);
                                     }
 
                                     else {
                                         fs.writeFile(config.NEWARepository.businessPaths.interfaces + 'I' + modelName + config.NEWARepository.businessPaths.extension, iBusinessTemplate.replace(/{{modelName}}/g, modelName), (err: NodeJS.ErrnoException) => {
 
                                             if (err) {
-                                                this.spinner.stop();
+                                                this.spinner.fail();
                                                 Log.error('Failed to generate business.');
                                             }
                                             else {
-                                                Log.success('\n' + (config.NEWARepository.businessPaths.interfaces + 'I' + modelName + config.NEWARepository.businessPaths.extension));
+                                                generatedRepositoryInterface = true;
 
                                                 //Check if classe already exists before create
                                                 fs.exists(path.resolve(config.NEWARepository.businessPaths.main + modelName + config.NEWARepository.businessPaths.extension), (exists: boolean) => {
 
                                                     if (exists) {
-
-                                                        this.spinner.stop();
-                                                        Log.highlight(`Already exists business @!"${modelName}${config.NEWARepository.businessPaths.extension}"!@ file.`);
+                                                        this.spinner.fail();
+                                                        Log.highlight(`Already exists business file @!${modelName}${config.NEWARepository.businessPaths.extension}!@.`);
                                                     }
                                                     else {
                                                         fs.writeFile(config.NEWARepository.businessPaths.main + modelName + config.NEWARepository.businessPaths.extension, businessTemplate.replace(/{{modelName}}/g, modelName), (err: NodeJS.ErrnoException) => {
 
                                                             if (err) {
-                                                                this.spinner.stop();
+                                                                this.spinner.fail();
                                                                 Log.error('Failed to generate business.');
                                                             }
                                                             else {
-                                                                Log.success((config.NEWARepository.businessPaths.main + modelName + config.NEWARepository.businessPaths.extension));
-                                                                this.addBusinessToBusinessFactory(modelName);
+                                                                this.addBusinessToInterfaceBusinessFactory(modelName, (businessInterfaceFactoryPath: string) => {
+                                                                
+                                                                    this.addBusinessToBusinessFactory(modelName, (businessFactoryPath: string) => {
+                                                                        
+                                                                        this.spinner.succeed();
+    
+                                                                        if (generatedRepositoryInterface) {
+                                                                            Log.createdTag(path.join(process.cwd(), config.NEWARepository.businessPaths.interfaces, 'I' + modelName + config.NEWARepository.businessPaths.extension));
+                                                                        }                             
+                                                                        Log.createdTag(path.join(process.cwd(), config.NEWARepository.businessPaths.main, modelName + config.NEWARepository.businessPaths.extension));
+                                                                        
+                                                                        if(businessInterfaceFactoryPath){
+                                                                            Log.updatedTag(businessInterfaceFactoryPath);
+                                                                        }
+
+                                                                        if(businessFactoryPath){
+                                                                            Log.updatedTag(businessFactoryPath);
+                                                                        }
+
+                                                                        process.exit();
+                                                                    });
+
+                                                                });
                                                             }
 
                                                         });
@@ -93,24 +114,27 @@ export class BusinessService {
 
                             }
                             else {
-                                this.spinner.stop();
+                                this.spinner.fail();
                                 Log.error(repositoryResponse.error.title);
                                 Log.highlight(repositoryResponse.error.message);
+                                process.exit();
                             }
                         });
                     }
                     else {
-                        this.spinner.stop();
+                        this.spinner.fail();
                         Log.error(response.error.title);
                         Log.highlight(response.error.message);
+                        process.exit();
                     }
 
                 });
             }
             else {
-                this.spinner.stop();
+                this.spinner.fail();
                 Log.error(response.error.title);
                 Log.highlight(response.error.message);
+                process.exit();
             }
 
         });
@@ -130,26 +154,26 @@ export class BusinessService {
                 let insertLine = true, isInClassBody = false;
 
                 rl.on('line', (line) => {
-                    
-                    if(line.indexOf('import') > -1 && line.indexOf('IBusinessFactory') < 0){
+
+                    if (line.indexOf('import') > -1 && line.indexOf('IBusinessFactory') < 0) {
                         insertLine = false;
                     }
-                    else{
+                    else {
                         insertLine = true;
                     }
-                    
-                    if(insertLine && !isInClassBody){
+
+                    if (insertLine && !isInClassBody) {
                         data += line + '\n';
                     }
 
-                    if(line.indexOf('export') > -1 && line.indexOf('class') > -1 && line.indexOf('BusinessFactory') > -1){
+                    if (line.indexOf('export') > -1 && line.indexOf('class') > -1 && line.indexOf('BusinessFactory') > -1) {
                         isInClassBody = true;
                     }
-                    
+
                 });
 
                 rl.on('close', () => {
-                    
+
                     data = data + '}';
 
                     fs.writeFile(businessFactoryFilePath, data, 'utf8', (err: NodeJS.ErrnoException) => {
@@ -172,7 +196,7 @@ export class BusinessService {
         });
     }
 
-    private addBusinessToBusinessFactory(modelName: string) {
+    private addBusinessToBusinessFactory(modelName: string, callback: Function) {
 
         fs.exists(path.resolve(config.NEWARepository.businessPaths.factories, 'BusinessFactory.ts'), (exists: boolean) => {
 
@@ -224,26 +248,87 @@ export class BusinessService {
 
 
                         fs.writeFile(path.resolve(config.NEWARepository.businessPaths.factories, 'BusinessFactory.ts'), fileData, 'utf8', (err: NodeJS.ErrnoException) => {
-                            this.spinner.stop();
 
                             if (err) {
-                                process.exit();
+                                callback('');
                             }
                             else {
-                                Log.success(config.NEWARepository.businessPaths.factories + 'BusinessFactory.ts');
+                                callback(path.join(process.cwd(), config.NEWARepository.businessPaths.factories, 'BusinessFactory.ts'));
                             }
 
                         });
                     }
                     else {
-                        this.spinner.stop();
+                        callback('');
                     }
                 });
 
 
             }
             else {
-                this.spinner.stop();
+                callback('')
+            }
+
+        });
+
+    }
+
+
+    private addBusinessToInterfaceBusinessFactory(modelName: string, callback: Function) {
+
+        fs.exists(path.resolve(config.NEWARepository.businessPaths.factoryInterfaceFile), (exists: boolean) => {
+
+            if (exists) {
+
+                fs.readFile(path.resolve(config.NEWARepository.businessPaths.factoryInterfaceFile), 'utf8', (err: NodeJS.ErrnoException, fileData) => {
+
+                    // If method doesn´t exists
+                    if (!(fileData.indexOf(`Get${modelName}Business()`) > -1)) {
+                        const BL: string = "\n"; //Break line
+                        const T: string = "\t" //Tab line
+                        var lastBracketPos, businessFactoryClassePos, breakLinePosAfterBusinessFactoryClasse = 0;
+
+                        //Add imports
+                        let modelInterfaceBusinessPath = path.relative(path.resolve(config.NEWARepository.businessPaths.interfaces), path.resolve(config.NEWARepository.businessPaths.interfaces)).replace(/\\/g, '/');
+                        modelInterfaceBusinessPath = modelInterfaceBusinessPath.length == 0 ? '.' : modelInterfaceBusinessPath;
+
+                        let imports: string = `import { I${modelName}Business } from "${modelInterfaceBusinessPath}/I${modelName}Business";\n`;
+
+                        //add imports to the beginning
+                        fileData = imports + fileData;
+                        //End imports
+
+                        // Add Method
+                        let insertMethod: string = `${
+                            T}Get${modelName}Business(): I${modelName}Business;${
+                            BL}}`;
+
+                        lastBracketPos = fileData.lastIndexOf('}');
+                        // slice the string in 2, one from the start to the lastIndexOf
+                        // and then replace the word in the rest
+                        fileData = fileData.slice(0, lastBracketPos) + fileData.slice(lastBracketPos).replace('}', insertMethod);
+
+
+                        fs.writeFile(path.resolve(config.NEWARepository.businessPaths.factoryInterfaceFile), fileData, 'utf8', (err: NodeJS.ErrnoException) => {
+
+                            if (err) {
+                                callback('');
+                            }
+                            else {
+                                callback(path.join(process.cwd(), config.NEWARepository.businessPaths.interfaces, 'IBusinessFactory.ts'));
+                            }
+
+                        });
+                    }
+                    else {
+                       callback('');
+                    }
+                });
+
+
+            }
+            else {
+                callback('');
             }
 
         });

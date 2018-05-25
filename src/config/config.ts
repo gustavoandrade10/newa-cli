@@ -14,6 +14,7 @@ export const config = {
             interfaces: 'src/Business/Interfaces/',
             main: 'src/Business/Rules/',
             factories: 'src/Business/Factories/',
+            factoryInterfaceFile: 'src/Business/Interfaces/IBusinessFactory.ts',
             extension: 'Business.ts'
         },
         controllerPaths: {

@@ -13,7 +13,7 @@ export class RepositoryService {
     private spinner: Ora;
     private validateService: ValidateService;
     constructor() {
-        this.spinner = new Ora();
+        this.spinner = new Ora({ spinner: 'dots' });
         this.validateService = new ValidateService();
     }
 
@@ -21,8 +21,7 @@ export class RepositoryService {
 
         modelName = modelName[0].toUpperCase() + modelName.substr(1);
 
-        this.spinner.text = `Generating respository(${modelName}Repository) ...`;
-        this.spinner.color = 'yellow';
+        this.spinner.text = `Generating ${modelName}Repository...`;
         this.spinner.start();
 
         this.validateService.hasRepositoryBaseClasseInterface((response: BaseResponse) => {
@@ -33,43 +32,48 @@ export class RepositoryService {
                 this.validateService.modelAndClassExists(modelName, (response: BaseResponse) => {
 
                     if (response.success) {
+                        let generatedRepositoryInterface = false;
 
                         //Check if interface alread exists before create
                         fs.exists(path.resolve(config.NEWARepository.repositoryPaths.interfaces + 'I' + modelName + config.NEWARepository.repositoryPaths.extension), (exists: boolean) => {
 
                             if (exists) {
                                 this.spinner.stop();
-                                Log.highlight(`Already exists repository interface @!"${modelName}${config.NEWARepository.repositoryPaths.extension}"!@ file.`);
+                                Log.highlight(`Already exists repository interface file @!I${modelName}${config.NEWARepository.repositoryPaths.extension}!@.`);
                             }
 
                             else {
                                 fs.writeFile(config.NEWARepository.repositoryPaths.interfaces + 'I' + modelName + config.NEWARepository.repositoryPaths.extension, iRepositoryTemplate.replace(/{{modelName}}/g, modelName), (err: NodeJS.ErrnoException) => {
 
                                     if (err) {
-                                        this.spinner.stop();
+                                        this.spinner.fail();
                                         Log.error('Failed to generate repository.');
                                     }
                                     else {
-                                        Log.success('\n'+(config.NEWARepository.repositoryPaths.interfaces + 'I' + modelName + config.NEWARepository.repositoryPaths.extension));
+                                        generatedRepositoryInterface = true;
 
                                         //Check if classe alread exists before create
                                         fs.exists(path.resolve(config.NEWARepository.repositoryPaths.main + modelName + config.NEWARepository.repositoryPaths.extension), (exists: boolean) => {
 
                                             if (exists) {
-                                                
-                                                this.spinner.stop();
-                                                Log.highlight(`Already exists repository @!"${modelName}${config.NEWARepository.repositoryPaths.extension}"!@ file.`);
+
+                                                this.spinner.fail();
+                                                Log.highlight(`Already exists repository file @!${modelName}${config.NEWARepository.repositoryPaths.extension}!@.`);
                                             }
                                             else {
                                                 fs.writeFile(config.NEWARepository.repositoryPaths.main + modelName + config.NEWARepository.repositoryPaths.extension, repositoryTemplate.replace(/{{modelName}}/g, modelName), (err: NodeJS.ErrnoException) => {
 
-                                                    this.spinner.stop();
-
                                                     if (err) {
+                                                        this.spinner.fail()
                                                         Log.error('Failed to generate repository.');
                                                     }
                                                     else {
-                                                        Log.success((config.NEWARepository.repositoryPaths.main + modelName + config.NEWARepository.repositoryPaths.extension));
+                                                        this.spinner.succeed();
+
+                                                        if (generatedRepositoryInterface) {
+                                                            Log.createdTag(path.join(process.cwd(), config.NEWARepository.repositoryPaths.interfaces, 'I' + modelName + config.NEWARepository.repositoryPaths.extension));
+                                                        }
+                                                        Log.createdTag(path.join(process.cwd(), config.NEWARepository.repositoryPaths.main, modelName + config.NEWARepository.repositoryPaths.extension));
                                                     }
 
                                                     process.exit();
@@ -87,7 +91,8 @@ export class RepositoryService {
 
                     }
                     else {
-                        this.spinner.stop();
+                        this.spinner.fail();
+                        process.exit();
                         Log.error(response.error.title);
                         Log.highlight(response.error.message);
                     }
@@ -95,7 +100,8 @@ export class RepositoryService {
 
             }
             else {
-                this.spinner.stop();
+                this.spinner.fail();
+                process.exit();
                 Log.error(response.error.title);
                 Log.highlight(response.error.message);
             }
