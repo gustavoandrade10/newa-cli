@@ -6,7 +6,7 @@ export class Log {
     constructor(){}
 
     static success(message: string){
-        console.log(Colors.Green, message);
+        console.log(Colors.Cyan, message);
     }
 
     static error(message: string){
@@ -26,7 +26,7 @@ export class Log {
         
         while(message.indexOf('@!') > -1 || message.indexOf('!@') > -1){
 
-            message = message.replace('@!', Colors.YellowNoReset);
+            message = message.replace('@!', Colors.CyanNoReset);
             message = message.replace('!@', Colors.WhiteNoReset);
         }
 
@@ -34,7 +34,7 @@ export class Log {
     }
 
     static showLogo(){
-        console.log(Colors.Yellow, LOGO);
+        console.log(Colors.White, LOGO);
     }
 
 }

@@ -1,7 +1,9 @@
-import { Log } from '../../utils/log';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as Ora from 'ora';
+import * as readline from 'readline';
+import * as stream from 'stream';
+import { Log } from '../../utils/log';
 import { config } from '../../config/config';
 import { ValidateService } from '../validate/validate.service';
 import { BaseResponse } from '../../utils/BaseResponse';
@@ -115,6 +117,61 @@ export class BusinessService {
 
     }
 
+    removeBusinessFactoryDependencies(projectPath: string, callback: Function) {
+        const businessFactoryFilePath = path.resolve(projectPath, config.NEWARepository.businessPaths.factories, 'BusinessFactory.ts')
+
+        fs.exists(businessFactoryFilePath, (exists: boolean) => {
+
+            if (exists) {
+
+                let instream = fs.createReadStream(businessFactoryFilePath);
+                let rl = readline.createInterface(instream, new stream.Writable);
+                let data = '';
+                let insertLine = true, isInClassBody = false;
+
+                rl.on('line', (line) => {
+                    
+                    if(line.indexOf('import') > -1 && line.indexOf('IBusinessFactory') < 0){
+                        insertLine = false;
+                    }
+                    else{
+                        insertLine = true;
+                    }
+                    
+                    if(insertLine && !isInClassBody){
+                        data += line + '\n';
+                    }
+
+                    if(line.indexOf('export') > -1 && line.indexOf('class') > -1 && line.indexOf('BusinessFactory') > -1){
+                        isInClassBody = true;
+                    }
+                    
+                });
+
+                rl.on('close', () => {
+                    
+                    data = data + '}';
+
+                    fs.writeFile(businessFactoryFilePath, data, 'utf8', (err: NodeJS.ErrnoException) => {
+
+                        if (err) {
+                            callback(false);
+                        }
+                        else {
+                            callback(true);
+                        }
+
+                    });
+                });
+
+            }
+            else {
+                callback(false);
+            }
+
+        });
+    }
+
     private addBusinessToBusinessFactory(modelName: string) {
 
         fs.exists(path.resolve(config.NEWARepository.businessPaths.factories, 'BusinessFactory.ts'), (exists: boolean) => {
@@ -127,40 +184,40 @@ export class BusinessService {
                     if (!(fileData.indexOf(`Get${modelName}Business()`) > -1)) {
                         const BL: string = "\n"; //Break line
                         const T: string = "\t" //Tab line
-                        var lastBracketPos, businessFactoryClassePos,  breakLinePosAfterBusinessFactoryClasse = 0;
-                            
+                        var lastBracketPos, businessFactoryClassePos, breakLinePosAfterBusinessFactoryClasse = 0;
+
                         //Add imports
-                        let modelBusinessPath = path.relative(path.resolve(config.NEWARepository.businessPaths.factories),path.resolve(config.NEWARepository.businessPaths.main)).replace(/\\/g,'/');
-                        let modelInterfaceBusinessPath = path.relative(path.resolve(config.NEWARepository.businessPaths.factories),path.resolve(config.NEWARepository.businessPaths.interfaces)).replace(/\\/g,'/');
-                        let modelRepositoryPath = path.relative(path.resolve(config.NEWARepository.businessPaths.factories),path.resolve(config.NEWARepository.repositoryPaths.main)).replace(/\\/g,'/');
-                        
+                        let modelBusinessPath = path.relative(path.resolve(config.NEWARepository.businessPaths.factories), path.resolve(config.NEWARepository.businessPaths.main)).replace(/\\/g, '/');
+                        let modelInterfaceBusinessPath = path.relative(path.resolve(config.NEWARepository.businessPaths.factories), path.resolve(config.NEWARepository.businessPaths.interfaces)).replace(/\\/g, '/');
+                        let modelRepositoryPath = path.relative(path.resolve(config.NEWARepository.businessPaths.factories), path.resolve(config.NEWARepository.repositoryPaths.main)).replace(/\\/g, '/');
+
                         let imports: string = `import { ${modelName}Business } from "${modelBusinessPath}/${modelName}Business";${
-                        BL}import { I${modelName}Business } from "${modelInterfaceBusinessPath}/I${modelName}Business";${
-                        BL}import { ${modelName}Repository } from "${modelRepositoryPath}/${modelName}Repository";\n`
+                            BL}import { I${modelName}Business } from "${modelInterfaceBusinessPath}/I${modelName}Business";${
+                            BL}import { ${modelName}Repository } from "${modelRepositoryPath}/${modelName}Repository";\n`
 
                         //add imports to the beginning
                         fileData = imports + fileData;
                         //End imports
-                        
-                        
+
+
                         //Add private fields
-                        let privateFields: string = `{${BL+T}private _i${modelName}Business: I${modelName}Business;`;
+                        let privateFields: string = `{${BL + T}private _i${modelName}Business: I${modelName}Business;`;
 
                         businessFactoryClassePos = fileData.lastIndexOf('IBusinessFactory');
                         breakLinePosAfterBusinessFactoryClasse = fileData.substr(businessFactoryClassePos).indexOf('{');
-                        
+
                         fileData = fileData.slice(0, (businessFactoryClassePos + breakLinePosAfterBusinessFactoryClasse)) + fileData.substr(businessFactoryClassePos + breakLinePosAfterBusinessFactoryClasse).replace('{', privateFields);
                         // End private fields    
 
                         // Add Method
                         let insertMethod: string = `${
-                        BL+T}public Get${modelName}Business(): I${modelName}Business{${
-                            BL+BL+T+T}this._i${modelName}Business = new ${modelName}Business(new ${modelName}Repository());${
-                            BL+BL+T+T}return this._i${modelName}Business;${
-                        BL+T}}${
-                        BL}}`;
+                            BL + T}public Get${modelName}Business(): I${modelName}Business{${
+                            BL + BL + T + T}this._i${modelName}Business = new ${modelName}Business(new ${modelName}Repository());${
+                            BL + BL + T + T}return this._i${modelName}Business;${
+                            BL + T}}${
+                            BL}}`;
 
-                        lastBracketPos =  fileData.lastIndexOf('}');
+                        lastBracketPos = fileData.lastIndexOf('}');
                         // slice the string in 2, one from the start to the lastIndexOf
                         // and then replace the word in the rest
                         fileData = fileData.slice(0, lastBracketPos) + fileData.slice(lastBracketPos).replace('}', insertMethod);
@@ -178,7 +235,7 @@ export class BusinessService {
 
                         });
                     }
-                    else{
+                    else {
                         this.spinner.stop();
                     }
                 });

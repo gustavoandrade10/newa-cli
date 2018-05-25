@@ -12,7 +12,7 @@ import { ValidateService } from './services/validate/validate.service';
 import { BusinessService } from './services/business/business.service';
 import { RepositoryService } from './services/repository/repository.service';
 import { ControllerService } from './services/controller/controller.service';
-import { MODELOPTIONS } from './constants/modelOptionsHelp';
+import { COMMANDOPTIONS } from './constants/commandOptionsHelp';
 
 class App {
 
@@ -44,20 +44,22 @@ class App {
             .command('new <projectname>')
             .alias('n')
             .description('Creates a new project')
-            .action((projectname) => {
+            .option('--b , --blank', 'Generates a blank project.')
+            .action((projectname, options) => {
 
                 if (Validator.projectNameValidator(projectname)) {
 
                     inquirer.prompt({
                         type: 'input',
                         name: 'install_dependencies',
-                        message: `Do you want NEWA to install the project(${projectname}) dependencies after creation?`,
+                        message: `Do you want NEWA to install the dependencies of ${projectname}?`,
                         validate: Validator.inquirerYesOrNoAnswerValidator
                     }).then((answer: any) => {
 
                         let hasToInstallDepedencies = Validator.yesOrNoAnswerValidator(answer.install_dependencies);
+                        let isBlankProject = options.blank === undefined ? false : true;
 
-                        this.projectService.create(projectname, hasToInstallDepedencies);
+                        this.projectService.create(projectname, hasToInstallDepedencies, isBlankProject);
 
                     });
                 }
@@ -153,6 +155,24 @@ class App {
 
             });
 
+        program
+            .command('all <modelname>')
+            .alias('a')
+            .description('Generates model, repository, business and controller, based on a model name.')
+            .option('--env , --environment <environment>', 'Sets the config database enviroment to use.')
+            .option('--t , --table <tablename>', 'Sets the name of table to use')
+            .action((modelname) => {
+
+                if (this.validateService.isInsideNEWAProject()) {
+
+                    
+                }
+                else {
+                    Log.error('You are not in a root "NEWA" project directory.');
+                    Log.highlight('Run: @!"newa new your-project-name"!@ to create a new one.');
+                }
+
+            });
         // Invalid commands
         program
             .on('command:*', () => {
@@ -161,7 +181,7 @@ class App {
 
         program
             .on('--help', () => {
-                Log.info(MODELOPTIONS);
+                Log.info(COMMANDOPTIONS);
             });
 
         program.parse(process.argv);

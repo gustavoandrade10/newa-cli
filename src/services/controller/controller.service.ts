@@ -1,7 +1,9 @@
-import { Log } from '../../utils/log';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as Ora from 'ora';
+import * as readline from 'readline';
+import * as stream from 'stream';
+import { Log } from '../../utils/log';
 import { config } from '../../config/config';
 import { ValidateService } from '../validate/validate.service';
 import { BaseResponse } from '../../utils/BaseResponse';
@@ -75,6 +77,65 @@ export class ControllerService {
                 this.spinner.stop();
                 Log.error(response.error.title);
                 Log.highlight(response.error.message);
+            }
+
+        });
+    }
+
+    
+    disattachControllerFromServer(projectPath: string, callback: Function) {
+        const serverFilePath = path.resolve(projectPath, config.NEWARepository.serverFilePath)
+
+        fs.exists(serverFilePath, (exists: boolean) => {
+
+            if (exists) {
+
+                let instream = fs.createReadStream(serverFilePath);
+                let rl = readline.createInterface(instream, new stream.Writable);
+                let data = '';
+                let insertLine = true;
+
+                rl.on('line', (line) => {
+                    
+                    if(line.indexOf('import') > -1 && line.toLowerCase().indexOf('controller') > -1){
+                        insertLine = false;
+                    }
+                    else if (line.toLowerCase().indexOf('//import') > -1){
+                        insertLine = false;
+                    }
+                    else{
+                        insertLine = true;
+                    }
+                    
+                    if(line.indexOf('import') < 0 && line.toLowerCase().indexOf('attachcontrollers') > - 1){
+                        let attachControllersInitial = line.substr(0, line.indexOf(','));
+
+                        line = attachControllersInitial + ', []);';
+                    }
+
+                    if(insertLine){
+                        data += line + '\n';
+                    }
+                    
+                });
+
+                rl.on('close', () => {
+                    
+                    fs.writeFile(serverFilePath, data, 'utf8', (err: NodeJS.ErrnoException) => {
+
+                        if (err) {
+                            callback(false);
+                        }
+                        else {
+                            callback(true);
+                        }
+
+                    });
+                });
+
+            }
+            else {
+                callback(false);
             }
 
         });
