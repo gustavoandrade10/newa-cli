@@ -3,7 +3,7 @@ export var modelTemplate =
 
 @Table({
   tableName: '{{tableName}}',
-  timestamps: true
+  timestamps: {{timestamps}}
 })
 export class {{name}} extends Model<{{name}}> {
 {{content}}

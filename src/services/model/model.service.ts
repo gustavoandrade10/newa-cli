@@ -1,7 +1,7 @@
-import { Log } from '../../utils/log';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as Ora from 'ora';
+import { Log } from '../../utils/log';
 import { DatabaseService } from '../database/database.service';
 import { IDatabaseConnection } from '../database/interfaces/IDatabaseConnection';
 import { config } from '../../config/config';
@@ -23,8 +23,7 @@ export class ModelService {
 
     create(modelName: string, tableName: string, dataBaseConfig: string) {
 
-        this.spinner.text = `Generating model(${modelName}) ...`;
-        this.spinner.color = 'yellow';
+        this.spinner.text = `Generating model ${modelName}...`;
         this.spinner.start();
 
         fs.readFile(path.resolve(config.NEWARepository.databaseConfigPath), 'utf8', (err: NodeJS.ErrnoException, data: Buffer) => {
@@ -56,31 +55,32 @@ export class ModelService {
 
                                 fs.writeFile(path.resolve(config.NEWARepository.modelsPath, modelName + ".ts"), model, (err: NodeJS.ErrnoException) => {
 
-                                    this.spinner.stop();
-
                                     if (err) {
-                                        Log.error('Error to generate model.');
+                                        this.spinner.fail();
                                     }
                                     else {
-                                        Log.success((config.NEWARepository.modelsPath + modelName + '.ts'));
+                                        this.spinner.succeed();
+                                        Log.createdTag(path.resolve(process.cwd(), config.NEWARepository.modelsPath, modelName + '.ts'));
                                     }
 
                                     process.exit();
                                 });
                             }
                             else {
+                                this.spinner.fail();
 
-                                this.spinner.stop();
-                                if(tableName)
+                                if (tableName)
                                     Log.error(`Could not find a table in database "${this.databaseConnection.database}" with name "${tableName}".`);
                                 else
                                     Log.error(`Could not find a table in database "${this.databaseConnection.database}" with name "${modelName}".`);
+                                
                                 process.exit();
                             }
 
                         }
                         else {
-                            this.spinner.stop();
+                            this.spinner.fail();
+                            process.exit();
                             Log.error(response.error.title);
                             Log.yellow(response.error.message);
                         }
@@ -88,14 +88,15 @@ export class ModelService {
 
                 }
                 else {
-                    this.spinner.stop();
+                    this.spinner.fail();
+                    process.exit();
                     Log.error(`Could not find the enviroment "${dataBaseConfig}" on database config file.`);
                     Log.highlight(` database config file path to search: @!${path.resolve(process.cwd(), config.NEWARepository.databaseConfigPath)}!@`);
                 }
 
             }
             else {
-                this.spinner.stop();
+                this.spinner.fail();
                 Log.error(`The database config json file is empty`);
                 Log.highlight(` database config file path to search: @!${path.resolve(process.cwd(), config.NEWARepository.databaseConfigPath)}!@`);
             }
@@ -104,6 +105,7 @@ export class ModelService {
 
     private getModelFromTable(table: Table, modelName: string): string {
         let modelTemplate = new Model();
+        let tableTimeStamps = false;
 
         modelTemplate.tableName = table.name;
         modelTemplate.name = modelName;
@@ -125,6 +127,7 @@ export class ModelService {
                 }
 
                 if (validCreatedDateFields[column.Field.toLowerCase()]) {
+                    tableTimeStamps = true;
 
                     attribute = `${
                         N + T}@CreatedAt${
@@ -133,6 +136,8 @@ export class ModelService {
                     modelTemplate.imports += ', CreatedAt';
                 }
                 else if (validUpdatedDateFields[column.Field.toLowerCase()]) {
+                    tableTimeStamps = true;
+
                     attribute = `${
                         N + T}@UpdatedAt${
                         N + T}${column.Field}: ${MyslToSequelizeTypes[dataType].type};
@@ -142,11 +147,11 @@ export class ModelService {
                 else {
 
                     let attributePrimaryKey = `${column.Key === 'PRI' ? ',' : ''}${
-                        N + T + T}${column.Key == 'PRI' ? 'primaryKey: true,' : ''}${
-                        N + T + T}${column.Extra == 'auto_increment' ? 'autoIncrement: true' : ''}
-                `;
+                        N + T + T}${column.Key == 'PRI' ? 'primaryKey: true' : ''}${column.Extra == 'auto_increment' ? `,${N + T + T}autoIncrement: true` : ''}`;
+                    
+                    let hideIdProperty = `${column.Field.toLowerCase() === 'id' ? '\n\t// @swaggerhideproperty' : ''}`;
 
-                    attribute = `${
+                    attribute = `${hideIdProperty}${ 
                         N + T}@Column({${
                         N + T + T}type: ${MyslToSequelizeTypes[dataType].dataType}${dataTypeValue},${
                         N + T + T}allowNull: ${column.Null == 'NO' ? false : true}${attributePrimaryKey.trim()}${
@@ -165,6 +170,7 @@ export class ModelService {
 
         modelTemplate.template = modelTemplate.template.replace('{{imports}}', modelTemplate.imports);
         modelTemplate.template = modelTemplate.template.replace('{{tableName}}', modelTemplate.tableName);
+        modelTemplate.template = modelTemplate.template.replace('{{timestamps}}', tableTimeStamps.toString());
         modelTemplate.template = modelTemplate.template.replace(/{{name}}/g, modelTemplate.name);
         modelTemplate.template = modelTemplate.template.replace('{{content}}', modelTemplate.content);
 

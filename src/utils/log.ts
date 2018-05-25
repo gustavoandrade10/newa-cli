@@ -20,7 +20,14 @@ export class Log {
     static yellow(message: string){
         console.log(Colors.Yellow, message);
     }
+    
+    static createdTag(message: string){
+        console.log(Colors.GreenNoReset, 'CREATED ', Colors.CyanNoReset, message, Colors.Reset);
+    }
 
+    static updatedTag(message: string){
+        console.log(Colors.YellowNoReset, 'UPDATED ',Colors.CyanNoReset, message, Colors.Reset);
+    }
     // use @! text to highlight !@ to highlight a text
     static highlight(message: string){
         
