@@ -7,17 +7,19 @@ import { ValidateService } from '../validate/validate.service';
 import { BaseResponse } from '../../utils/BaseResponse';
 import { iRepositoryTemplate } from './constants/iRepositoryTemplate';
 import { repositoryTemplate } from './constants/repositoryTemplate';
+import { ServiceResponseType } from '../../enums/ServiceResponseType';
+import { ServiceResponse } from '../../utils/ServiceResponse';
 
 export class RepositoryService {
 
-    private spinner: Ora;
+    spinner: Ora;
     private validateService: ValidateService;
     constructor() {
         this.spinner = new Ora({ spinner: 'dots' });
         this.validateService = new ValidateService();
     }
 
-    create(modelName: string) {
+    create(modelName: string, callback: Function) {
 
         modelName = modelName[0].toUpperCase() + modelName.substr(1);
 
@@ -66,17 +68,26 @@ export class RepositoryService {
                                                     if (err) {
                                                         this.spinner.fail()
                                                         Log.error('Failed to generate repository.');
+                                                        process.exit();
                                                     }
                                                     else {
-                                                        this.spinner.succeed();
+                                                        let response: Array<ServiceResponse> = [];
 
                                                         if (generatedRepositoryInterface) {
-                                                            Log.createdTag(path.join(process.cwd(), config.NEWARepository.repositoryPaths.interfaces, 'I' + modelName + config.NEWARepository.repositoryPaths.extension));
+                                                            response.push({
+                                                                type: ServiceResponseType.created,
+                                                                message: path.join(process.cwd(), config.NEWARepository.repositoryPaths.interfaces, 'I' + modelName + config.NEWARepository.repositoryPaths.extension)
+                                                            });
                                                         }
-                                                        Log.createdTag(path.join(process.cwd(), config.NEWARepository.repositoryPaths.main, modelName + config.NEWARepository.repositoryPaths.extension));
+
+                                                        response.push({
+                                                            type: ServiceResponseType.created,
+                                                            message: path.join(process.cwd(), config.NEWARepository.repositoryPaths.main, modelName + config.NEWARepository.repositoryPaths.extension)
+                                                        });
+
+                                                        callback(response);
                                                     }
 
-                                                    process.exit();
                                                 });
 
                                             }

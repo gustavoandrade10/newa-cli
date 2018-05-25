@@ -9,17 +9,19 @@ import { ValidateService } from '../validate/validate.service';
 import { BaseResponse } from '../../utils/BaseResponse';
 import { iBusinessTemplate } from './constants/iBusinessTemplate';
 import { businessTemplate } from './constants/businessTemplate';
+import { ServiceResponse } from '../../utils/ServiceResponse';
+import { ServiceResponseType } from '../../enums/ServiceResponseType';
 
 export class BusinessService {
 
-    private spinner: Ora;
+    spinner: Ora;
     private validateService: ValidateService;
     constructor() {
-        this.spinner = new Ora({spinner: 'dots2'});
+        this.spinner = new Ora({ spinner: 'dots2' });
         this.validateService = new ValidateService();
     }
 
-    create(modelName: string) {
+    create(modelName: string, callback: Function) {
 
         modelName = modelName[0].toUpperCase() + modelName.substr(1);
 
@@ -40,7 +42,7 @@ export class BusinessService {
                         this.validateService.repositoryAndClassExists(modelName, (repositoryResponse: BaseResponse) => {
 
                             if (repositoryResponse.success) {
-                                let generatedRepositoryInterface = false;
+                                let generatedBusinessInterface = false;
 
                                 //Check if interface alread exists before create
                                 fs.exists(path.resolve(config.NEWARepository.businessPaths.interfaces + 'I' + modelName + config.NEWARepository.businessPaths.extension), (exists: boolean) => {
@@ -58,7 +60,7 @@ export class BusinessService {
                                                 Log.error('Failed to generate business.');
                                             }
                                             else {
-                                                generatedRepositoryInterface = true;
+                                                generatedBusinessInterface = true;
 
                                                 //Check if classe already exists before create
                                                 fs.exists(path.resolve(config.NEWARepository.businessPaths.main + modelName + config.NEWARepository.businessPaths.extension), (exists: boolean) => {
@@ -73,28 +75,42 @@ export class BusinessService {
                                                             if (err) {
                                                                 this.spinner.fail();
                                                                 Log.error('Failed to generate business.');
+                                                                process.exit();
                                                             }
                                                             else {
                                                                 this.addBusinessToInterfaceBusinessFactory(modelName, (businessInterfaceFactoryPath: string) => {
-                                                                
+
                                                                     this.addBusinessToBusinessFactory(modelName, (businessFactoryPath: string) => {
-                                                                        
-                                                                        this.spinner.succeed();
-    
-                                                                        if (generatedRepositoryInterface) {
-                                                                            Log.createdTag(path.join(process.cwd(), config.NEWARepository.businessPaths.interfaces, 'I' + modelName + config.NEWARepository.businessPaths.extension));
-                                                                        }                             
-                                                                        Log.createdTag(path.join(process.cwd(), config.NEWARepository.businessPaths.main, modelName + config.NEWARepository.businessPaths.extension));
-                                                                        
-                                                                        if(businessInterfaceFactoryPath){
-                                                                            Log.updatedTag(businessInterfaceFactoryPath);
+
+                                                                        let response: Array<ServiceResponse> = [];
+
+                                                                        if (generatedBusinessInterface) {
+                                                                            response.push({
+                                                                                type: ServiceResponseType.created,
+                                                                                message: path.join(process.cwd(), config.NEWARepository.businessPaths.interfaces, 'I' + modelName + config.NEWARepository.businessPaths.extension)
+                                                                            });
                                                                         }
 
-                                                                        if(businessFactoryPath){
-                                                                            Log.updatedTag(businessFactoryPath);
+                                                                        response.push({
+                                                                            type: ServiceResponseType.created,
+                                                                            message: path.join(process.cwd(), config.NEWARepository.businessPaths.main, modelName + config.NEWARepository.businessPaths.extension)
+                                                                        });
+
+                                                                        if (businessInterfaceFactoryPath) {
+                                                                            response.push({
+                                                                                type: ServiceResponseType.updated,
+                                                                                message: businessInterfaceFactoryPath
+                                                                            });
                                                                         }
 
-                                                                        process.exit();
+                                                                        if (businessFactoryPath) {
+                                                                            response.push({
+                                                                                type: ServiceResponseType.updated,
+                                                                                message: businessFactoryPath
+                                                                            });
+                                                                        }
+
+                                                                        callback(response);
                                                                     });
 
                                                                 });
@@ -322,7 +338,7 @@ export class BusinessService {
                         });
                     }
                     else {
-                       callback('');
+                        callback('');
                     }
                 });
 

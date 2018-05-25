@@ -10,18 +10,19 @@ import { Table } from '../database/classes/table';
 import { Model } from './classes/model';
 import { MyslToSequelizeTypes } from './constants/MyslToSequelizeTypes';
 import { validCreatedDateFields, validUpdatedDateFields } from './constants/validCreatedUpdatedDateFields';
+import { ServiceResponseType } from '../../enums/ServiceResponseType';
 
 export class ModelService {
 
+    spinner: Ora;
     private databaseConnection: IDatabaseConnection;
-    private spinner: Ora;
     private database: DatabaseService;
     constructor() {
         this.spinner = new Ora();
         this.database = new DatabaseService();
     }
 
-    create(modelName: string, tableName: string, dataBaseConfig: string) {
+    create(modelName: string, tableName: string, dataBaseConfig: string, callback: Function) {
 
         this.spinner.text = `Generating model ${modelName}...`;
         this.spinner.start();
@@ -57,13 +58,17 @@ export class ModelService {
 
                                     if (err) {
                                         this.spinner.fail();
+                                        process.exit();
                                     }
                                     else {
-                                        this.spinner.succeed();
-                                        Log.createdTag(path.resolve(process.cwd(), config.NEWARepository.modelsPath, modelName + '.ts'));
+                                        callback([
+                                            {
+                                                type: ServiceResponseType.created,
+                                                message: path.resolve(process.cwd(), config.NEWARepository.modelsPath, modelName + '.ts')
+                                            }
+                                        ])
                                     }
 
-                                    process.exit();
                                 });
                             }
                             else {

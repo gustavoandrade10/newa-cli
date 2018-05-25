@@ -8,17 +8,19 @@ import { config } from '../../config/config';
 import { ValidateService } from '../validate/validate.service';
 import { BaseResponse } from '../../utils/BaseResponse';
 import { controllerTemplate } from './constants/controllerTemplate';
+import { ServiceResponse } from '../../utils/ServiceResponse';
+import { ServiceResponseType } from '../../enums/ServiceResponseType';
 
 export class ControllerService {
 
-    private spinner: Ora;
+    spinner: Ora;
     private validateService: ValidateService;
     constructor() {
         this.spinner = new Ora({spinner: 'dots'});
         this.validateService = new ValidateService();
     }
 
-    create(modelName: string) {
+    create(modelName: string, callback: Function) {
 
         modelName = modelName[0].toUpperCase() + modelName.substr(1);
 
@@ -53,19 +55,26 @@ export class ControllerService {
                                     if (err) {
                                         this.spinner.fail();
                                         Log.error('Failed to generate controller.');
+                                        process.exit();
                                     }
                                     else {
 
                                         this.attachControllerToServer(modelName+'Controller',(controllerPath: string) => {
-                                            this.spinner.succeed();
-                                            
-                                            Log.createdTag(path.join(process.cwd(), config.NEWARepository.controllerPaths.main, modelName + config.NEWARepository.controllerPaths.extension));
+                                            let response: Array<ServiceResponse> = [];
 
-                                            if(controllerPath){
-                                                Log.updatedTag(controllerPath);
+                                            response.push({
+                                                type: ServiceResponseType.created,
+                                                message: path.join(process.cwd(), config.NEWARepository.controllerPaths.main, modelName + config.NEWARepository.controllerPaths.extension)
+                                            });
+
+                                            if (controllerPath) {
+                                                response.push({
+                                                    type: ServiceResponseType.updated,
+                                                    message: controllerPath
+                                                });
                                             }
-                                            
-                                            process.exit();
+
+                                            callback(response);
                                         });
                                     }
                                 });

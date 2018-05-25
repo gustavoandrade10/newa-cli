@@ -4,6 +4,7 @@ import * as inquirer from 'inquirer';
 import { Log } from './utils/log';
 import { Validator } from './utils/validator';
 import * as json from '../package.json'
+import * as Ora from 'ora';
 
 // import services
 import { ProjectService } from './services/project/project.service';
@@ -13,6 +14,8 @@ import { BusinessService } from './services/business/business.service';
 import { RepositoryService } from './services/repository/repository.service';
 import { ControllerService } from './services/controller/controller.service';
 import { COMMANDOPTIONS } from './constants/commandOptionsHelp';
+import { ServiceResponse } from './utils/ServiceResponse';
+import { ServiceResponseType } from './enums/ServiceResponseType';
 
 class App {
 
@@ -92,7 +95,20 @@ class App {
 
                     let databaseEnviroment = options.environment != undefined ? options.environment : 'default';
 
-                    this.modelService.create(modelname, options.table, databaseEnviroment);
+                    this.modelService.create(modelname, options.table, databaseEnviroment, (modelResponse: Array<ServiceResponse>) => {
+                        this.modelService.spinner.succeed();
+
+                        modelResponse.forEach(response => {
+                            if (response.type == ServiceResponseType.created) {
+                                Log.createdTag(response.message);
+                            }
+                            else {
+                                Log.updatedTag(response.message);
+                            }
+                        });
+
+                        process.exit();
+                    });
                 }
                 else {
                     Log.error('You are not in a root "NEWA" project directory.');
@@ -110,7 +126,20 @@ class App {
 
                 if (this.validateService.isInsideNEWAProject()) {
 
-                    this.repositoryService.create(modelname);
+                    this.repositoryService.create(modelname, (repositoryResponse: Array<ServiceResponse>) => {
+                        this.repositoryService.spinner.succeed();
+
+                        repositoryResponse.forEach(response => {
+                            if (response.type == ServiceResponseType.created) {
+                                Log.createdTag(response.message);
+                            }
+                            else {
+                                Log.updatedTag(response.message);
+                            }
+                        });
+
+                        process.exit();
+                    });
                 }
                 else {
                     Log.error('You are not in a root "NEWA" project directory.');
@@ -128,7 +157,20 @@ class App {
 
                 if (this.validateService.isInsideNEWAProject()) {
 
-                    this.businessService.create(modelname);
+                    this.businessService.create(modelname, (businessResponse: Array<ServiceResponse>) => {
+                        this.businessService.spinner.succeed();
+
+                        businessResponse.forEach(response => {
+                            if (response.type == ServiceResponseType.created) {
+                                Log.createdTag(response.message);
+                            }
+                            else {
+                                Log.updatedTag(response.message);
+                            }
+                        });
+
+                        process.exit();
+                    });
                 }
                 else {
                     Log.error('You are not in a root "NEWA" project directory.');
@@ -146,7 +188,20 @@ class App {
 
                 if (this.validateService.isInsideNEWAProject()) {
 
-                    this.controllerService.create(modelname);
+                    this.controllerService.create(modelname, (controllerResponse: Array<ServiceResponse>) => {
+                        this.controllerService.spinner.succeed();
+
+                        controllerResponse.forEach(response => {
+                            if (response.type == ServiceResponseType.created) {
+                                Log.createdTag(response.message);
+                            }
+                            else {
+                                Log.updatedTag(response.message);
+                            }
+                        });
+
+                        process.exit();
+                    });
                 }
                 else {
                     Log.error('You are not in a root "NEWA" project directory.');
@@ -161,11 +216,69 @@ class App {
             .description('Generates model, repository, business and controller, based on a model name.')
             .option('--env , --environment <environment>', 'Sets the config database enviroment to use.')
             .option('--t , --table <tablename>', 'Sets the name of table to use')
-            .action((modelname) => {
+            .action((modelname, options) => {
 
                 if (this.validateService.isInsideNEWAProject()) {
+                    let spinner = new Ora({ spinner: 'dots' });
+                    spinner.text = 'Generating model, repository, business and controller for ' + modelname + '...';
+                    spinner.start();
 
-                    
+                    let databaseEnviroment = options.environment != undefined ? options.environment : 'default';
+
+                    this.modelService.create(modelname, options.table, databaseEnviroment, (modelResponse: Array<ServiceResponse>) => {
+
+                        this.repositoryService.create(modelname, (repositoryResponse: Array<ServiceResponse>) => {
+
+                            this.businessService.create(modelname, (businessResponse: Array<ServiceResponse>) => {
+
+                                this.controllerService.create(modelname, (controllerResponse: Array<ServiceResponse>) => {
+                                    spinner.succeed();
+
+                                    modelResponse.forEach(response => {
+                                        if (response.type == ServiceResponseType.created) {
+                                            Log.createdTag(response.message);
+                                        }
+                                        else {
+                                            Log.updatedTag(response.message);
+                                        }
+                                    });
+
+                                    repositoryResponse.forEach(response => {
+                                        if (response.type == ServiceResponseType.created) {
+                                            Log.createdTag(response.message);
+                                        }
+                                        else {
+                                            Log.updatedTag(response.message);
+                                        }
+                                    });
+
+                                    businessResponse.forEach(response => {
+                                        if (response.type == ServiceResponseType.created) {
+                                            Log.createdTag(response.message);
+                                        }
+                                        else {
+                                            Log.updatedTag(response.message);
+                                        }
+                                    });
+
+                                    controllerResponse.forEach(response => {
+                                        if (response.type == ServiceResponseType.created) {
+                                            Log.createdTag(response.message);
+                                        }
+                                        else {
+                                            Log.updatedTag(response.message);
+                                        }
+                                    });
+
+                                    process.exit();
+
+                                }); // End Controller
+
+                            }); // End Business
+
+                        }); // End repository
+
+                    }); // End models
                 }
                 else {
                     Log.error('You are not in a root "NEWA" project directory.');
