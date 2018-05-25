@@ -11,13 +11,11 @@
   "preferGlobal": true,
   "bin": "./dist/app.js",
   "dependencies": {
-    "@types/ncp": "^2.0.1",
     "commander": "^2.15.1",
     "core-js": "^2.5.6",
     "globby": "^8.0.1",
     "inquirer": "^5.2.0",
     "mysql": "^2.15.0",
-    "ncp": "^2.0.0",
     "node-run-cmd": "^1.0.1",
     "ora": "^2.1.0",
     "rimraf": "^2.6.2"
