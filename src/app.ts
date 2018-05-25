@@ -105,7 +105,7 @@ class App {
         program
             .command('repository <modelname>')
             .alias('r')
-            .description('Generates a new repository, based on a model')
+            .description('Generates a new repository, based on a model.')
             .action((modelname) => {
 
                 if (this.validateService.isInsideNEWAProject()) {
@@ -123,7 +123,7 @@ class App {
         program
             .command('business <modelname>')
             .alias('b')
-            .description('Generates a new business, based on a model')
+            .description('Generates a new business, based on a model.')
             .action((modelname) => {
 
                 if (this.validateService.isInsideNEWAProject()) {
@@ -141,7 +141,7 @@ class App {
         program
             .command('controller <modelname>')
             .alias('c')
-            .description('Generates a new controller, based on a model')
+            .description('Generates a new controller, based on a model.')
             .action((modelname) => {
 
                 if (this.validateService.isInsideNEWAProject()) {

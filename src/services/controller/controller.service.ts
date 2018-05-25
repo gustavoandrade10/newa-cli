@@ -14,7 +14,7 @@ export class ControllerService {
     private spinner: Ora;
     private validateService: ValidateService;
     constructor() {
-        this.spinner = new Ora();
+        this.spinner = new Ora({spinner: 'dots'});
         this.validateService = new ValidateService();
     }
 
@@ -22,8 +22,7 @@ export class ControllerService {
 
         modelName = modelName[0].toUpperCase() + modelName.substr(1);
 
-        this.spinner.text = `Generating controller(${modelName}Controller) ...`;
-        this.spinner.color = 'yellow';
+        this.spinner.text = `Generating ${modelName}Controller...`;
         this.spinner.start();
 
         // Check if model exits and if it is valid "empty files won´t work"
@@ -40,8 +39,8 @@ export class ControllerService {
                         fs.exists(path.resolve(config.NEWARepository.controllerPaths.main + modelName + config.NEWARepository.controllerPaths.extension), (exists: boolean) => {
 
                             if (exists) {
-                                this.spinner.stop();
-                                Log.highlight(`Already exists controller @!"${modelName}${config.NEWARepository.controllerPaths.extension}"!@ file.`);
+                                this.spinner.fail();
+                                Log.highlight(`Already exists controller file @!${modelName}${config.NEWARepository.controllerPaths.extension}!@.`);
                             }
 
                             else {
@@ -50,16 +49,25 @@ export class ControllerService {
                                 controllTemplate = controllTemplate.replace(/{{routeName}}/g, modelName.toLowerCase())
 
                                 fs.writeFile(config.NEWARepository.controllerPaths.main + modelName + config.NEWARepository.controllerPaths.extension, controllTemplate, (err: NodeJS.ErrnoException) => {
-                                    this.spinner.stop();
 
                                     if (err) {
-                                        console.log(err)
+                                        this.spinner.fail();
                                         Log.error('Failed to generate controller.');
                                     }
                                     else {
-                                        Log.success('\n' + (config.NEWARepository.controllerPaths.main + modelName + config.NEWARepository.controllerPaths.extension));
-                                    }
 
+                                        this.attachControllerToServer(modelName+'Controller',(controllerPath: string) => {
+                                            this.spinner.succeed();
+                                            
+                                            Log.createdTag(path.join(process.cwd(), config.NEWARepository.controllerPaths.main, modelName + config.NEWARepository.controllerPaths.extension));
+
+                                            if(controllerPath){
+                                                Log.updatedTag(controllerPath);
+                                            }
+                                            
+                                            process.exit();
+                                        });
+                                    }
                                 });
 
                             }
@@ -67,22 +75,24 @@ export class ControllerService {
 
                     }
                     else {
-                        this.spinner.stop();
+                        this.spinner.fail();
                         Log.error(businessResponse.error.title);
                         Log.highlight(businessResponse.error.message);
+                        process.exit();
                     }
                 });
             }
             else {
-                this.spinner.stop();
+                this.spinner.fail();
                 Log.error(response.error.title);
                 Log.highlight(response.error.message);
+                process.exit();
             }
 
         });
     }
 
-    
+    // Used when creating a blank project
     disattachControllerFromServer(projectPath: string, callback: Function) {
         const serverFilePath = path.resolve(projectPath, config.NEWARepository.serverFilePath)
 
@@ -141,4 +151,79 @@ export class ControllerService {
         });
     }
 
+    private attachControllerToServer(controllerFullName: string, callback: Function) {
+        const serverFilePath = path.resolve(process.cwd(), config.NEWARepository.serverFilePath);
+
+        fs.exists(serverFilePath, (exists: boolean) => {
+
+            if (exists) {
+
+                let instream = fs.createReadStream(serverFilePath);
+                let rl = readline.createInterface(instream, new stream.Writable);
+                let data = '';
+                let isImportLine = false, isAlreadyImported = false, isLastImportWord = false, insertLine = true;
+                let imporLinePos = 0;
+
+                rl.on('line', (line) => {
+
+                    if(line.indexOf('import') && line.toLowerCase().indexOf('controller/' + controllerFullName.toLowerCase()) > -1){
+                        isAlreadyImported = true;
+                    }
+                    
+                    if (line.indexOf('import') > -1){
+                        isImportLine = true;
+                    }
+                    // Save the positions of the last 'import' line
+                    else if (line.indexOf('import') < 0 && isImportLine){
+                        isImportLine = false;
+                        imporLinePos = data.length;
+                    }
+
+                    // If found class it is beacause the last 'import' position was found
+                    // So import to the file here
+                    if(line.indexOf('class') > -1 && line.toLowerCase().indexOf('server') > -1){
+                        let controllerImportPath = path.relative(path.resolve('src/'), path.resolve(config.NEWARepository.controllerPaths.main)).replace(/\\/g, '/');
+                        let importLine = `import { ${controllerFullName} } from "./${controllerImportPath}/${controllerFullName}";\n\n`
+                        
+                        data = data.slice(0, imporLinePos) + importLine + data.substr(imporLinePos + importLine.length);
+                    }
+                    
+                    if(line.indexOf('import') < 0 && line.toLowerCase().indexOf('attachcontrollers') > - 1){
+                        let attachControllersInitial = line.substr(0, line.indexOf('['));
+
+                        line = attachControllersInitial + `[${controllerFullName}, `+ line.substr(line.indexOf('[') + 1);
+                    }
+
+                    if(insertLine){
+                        data += line + '\n';
+                    }
+                    
+                });
+
+                rl.on('close', () => {
+                    
+                    if(!isAlreadyImported){
+                        fs.writeFile(serverFilePath, data, 'utf8', (err: NodeJS.ErrnoException) => {
+
+                            if (err) {
+                                callback('');
+                            }
+                            else {
+                                callback(path.join(serverFilePath));
+                            }
+
+                        });
+                    }
+                    else{
+                        callback('');
+                    }
+                });
+
+            }
+            else {
+                callback('');
+            }
+
+        });
+    }
 }

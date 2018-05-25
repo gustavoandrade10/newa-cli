@@ -141,6 +141,7 @@ export class BusinessService {
 
     }
 
+    // Used when creating a blank project
     removeBusinessFactoryDependencies(projectPath: string, callback: Function) {
         const businessFactoryFilePath = path.resolve(projectPath, config.NEWARepository.businessPaths.factories, 'BusinessFactory.ts')
 
