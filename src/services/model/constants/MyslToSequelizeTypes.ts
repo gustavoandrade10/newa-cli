@@ -29,6 +29,11 @@ export let  MyslToSequelizeTypes: any = {
         dataType: 'DataType.BIGINT',
         type: 'number'
     },
+    
+    'BIT': {
+        dataType: 'DataType.INTEGER',
+        type: 'number'
+    },
 
     'INT': {
         dataType: 'DataType.INTEGER',
