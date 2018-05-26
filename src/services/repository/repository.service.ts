@@ -27,12 +27,12 @@ export class RepositoryService {
         this.spinner.start();
 
         this.validateService.hasRepositoryBaseClasseInterface((response: BaseResponse) => {
-
+         
             if (response.success) {
 
                 // Check if model exits and if it is valid "empty files won´t work"
                 this.validateService.modelAndClassExists(modelName, (response: BaseResponse) => {
-
+                    
                     if (response.success) {
                         let generatedRepositoryInterface = false;
 
@@ -103,18 +103,18 @@ export class RepositoryService {
                     }
                     else {
                         this.spinner.fail();
-                        process.exit();
                         Log.error(response.error.title);
                         Log.highlight(response.error.message);
+                        process.exit();
                     }
                 }); // End of Model class validation
 
             }
             else {
                 this.spinner.fail();
-                process.exit();
                 Log.error(response.error.title);
                 Log.highlight(response.error.message);
+                process.exit();
             }
 
         }); // End has base classe and interface

@@ -149,10 +149,10 @@ export class ProjectService {
                     globby(
                         [
                             path.join(currentRepositoryFilePath, config.NEWARepository.modelsPath, '*.ts'),
-                            path.join(currentRepositoryFilePath, config.NEWARepository.repositoryPaths.interfaces, `*${config.NEWARepository.repositoryPaths.extension}`),
-                            path.join(currentRepositoryFilePath, config.NEWARepository.repositoryPaths.main, `*${config.NEWARepository.repositoryPaths.extension}`),
-                            path.join(currentRepositoryFilePath, config.NEWARepository.businessPaths.interfaces, `*${config.NEWARepository.businessPaths.extension}`),
-                            path.join(currentRepositoryFilePath, config.NEWARepository.businessPaths.main, `*${config.NEWARepository.businessPaths.extension}`),
+                            path.join(currentRepositoryFilePath, config.NEWARepository.repositoryPaths.interfaces +`!(IBase${config.NEWARepository.repositoryPaths.extension})`),
+                            path.join(currentRepositoryFilePath, config.NEWARepository.repositoryPaths.main + `!(Base${config.NEWARepository.repositoryPaths.extension})`),
+                            path.join(currentRepositoryFilePath, config.NEWARepository.businessPaths.interfaces, `!(IBase${config.NEWARepository.businessPaths.extension}|IBusinessFactory.ts|IJWTokenSignOptions.ts)`),
+                            path.join(currentRepositoryFilePath, config.NEWARepository.businessPaths.main, `!(Base${config.NEWARepository.businessPaths.extension})`),
                             path.join(currentRepositoryFilePath, config.NEWARepository.controllerPaths.main, `*${config.NEWARepository.controllerPaths.extension}`)
                         ])
                         .then(function then(paths) {

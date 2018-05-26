@@ -224,7 +224,7 @@ class App {
                     spinner.start();
 
                     let databaseEnviroment = options.environment != undefined ? options.environment : 'default';
-
+                    
                     this.modelService.create(modelname, options.table, databaseEnviroment, (modelResponse: Array<ServiceResponse>) => {
 
                         this.repositoryService.create(modelname, (repositoryResponse: Array<ServiceResponse>) => {
