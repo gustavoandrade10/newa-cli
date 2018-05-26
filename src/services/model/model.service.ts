@@ -78,7 +78,7 @@ export class ModelService {
                                     Log.error(`Could not find a table in database "${this.databaseConnection.database}" with name "${tableName}".`);
                                 else
                                     Log.error(`Could not find a table in database "${this.databaseConnection.database}" with name "${modelName}".`);
-                                
+
                                 process.exit();
                             }
 
@@ -123,50 +123,53 @@ export class ModelService {
 
             try {
 
-                if (column.Type.indexOf('(') > -1) {
-                    dataType = column.Type.toUpperCase().substr(0, column.Type.indexOf('('));
-                    dataTypeValue = column.Type.substr(column.Type.indexOf('('));
-                }
-                else {
-                    dataType = column.Type.toUpperCase();
-                }
+                // Skip field that has attributes property
+                if (column.Field.toLowerCase() != 'attributes') {
 
-                if (validCreatedDateFields[column.Field.toLowerCase()]) {
-                    tableTimeStamps = true;
+                    if (column.Type.indexOf('(') > -1) {
+                        dataType = column.Type.toUpperCase().substr(0, column.Type.indexOf('('));
+                        dataTypeValue = column.Type.substr(column.Type.indexOf('('));
+                    }
+                    else {
+                        dataType = column.Type.toUpperCase();
+                    }
 
-                    attribute = `${
-                        N + T}@CreatedAt${
-                        N + T}${column.Field}: ${MyslToSequelizeTypes[dataType].type};
+                    if (validCreatedDateFields[column.Field.toLowerCase()]) {
+                        tableTimeStamps = true;
+
+                        attribute = `${
+                            N + T}@CreatedAt${
+                            N + T}${column.Field}: ${MyslToSequelizeTypes[dataType].type};
                 `
-                    modelTemplate.imports += ', CreatedAt';
-                }
-                else if (validUpdatedDateFields[column.Field.toLowerCase()]) {
-                    tableTimeStamps = true;
+                        modelTemplate.imports += ', CreatedAt';
+                    }
+                    else if (validUpdatedDateFields[column.Field.toLowerCase()]) {
+                        tableTimeStamps = true;
 
-                    attribute = `${
-                        N + T}@UpdatedAt${
-                        N + T}${column.Field}: ${MyslToSequelizeTypes[dataType].type};
+                        attribute = `${
+                            N + T}@UpdatedAt${
+                            N + T}${column.Field}: ${MyslToSequelizeTypes[dataType].type};
                 `
-                    modelTemplate.imports += ', UpdatedAt';
-                }
-                else {
+                        modelTemplate.imports += ', UpdatedAt';
+                    }
+                    else {
 
-                    let attributePrimaryKey = `${column.Key === 'PRI' ? ',' : ''}${
-                        N + T + T}${column.Key == 'PRI' ? 'primaryKey: true' : ''}${column.Extra == 'auto_increment' ? `,${N + T + T}autoIncrement: true` : ''}`;
-                    
-                    let hideIdProperty = `${column.Field.toLowerCase() === 'id' ? '\n\t// @swaggerhideproperty' : ''}`;
+                        let attributePrimaryKey = `${column.Key === 'PRI' ? ',' : ''}${
+                            N + T + T}${column.Key == 'PRI' ? 'primaryKey: true' : ''}${column.Extra == 'auto_increment' ? `,${N + T + T}autoIncrement: true` : ''}`;
 
-                    attribute = `${hideIdProperty}${ 
-                        N + T}@Column({${
-                        N + T + T}type: ${MyslToSequelizeTypes[dataType].dataType}${dataTypeValue},${
-                        N + T + T}allowNull: ${column.Null == 'NO' ? false : true}${attributePrimaryKey.trim()}${
-                        N + T}})${
-                        N + T}${column.Field}: ${MyslToSequelizeTypes[dataType].type};
+                        let hideIdProperty = `${column.Field.toLowerCase() === 'id' ? '\n\t// @swaggerhideproperty' : ''}`;
+
+                        attribute = `${hideIdProperty}${
+                            N + T}@Column({${
+                            N + T + T}type: ${MyslToSequelizeTypes[dataType].dataType}${dataTypeValue},${
+                            N + T + T}allowNull: ${column.Null == 'NO' ? false : true}${attributePrimaryKey.trim()}${
+                            N + T}})${
+                            N + T}${column.Field}: ${MyslToSequelizeTypes[dataType].type};
                 `
+                    }
+
+                    modelTemplate.content += attribute;
                 }
-
-                modelTemplate.content += attribute;
-
 
             } catch (e) {
                 //handle error here

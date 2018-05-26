@@ -159,8 +159,11 @@ export class ProjectService {
                             paths.map(function map(item, index) {
                                 rimraf(item, () => {
                                     if (index == paths.length - 1) {
-                                        businessService.removeBusinessFactoryDependencies(currentRepositoryFilePath, () => {
-                                            controllerService.disattachControllerFromServer(currentRepositoryFilePath, callback);
+
+                                        businessService.removeBusinessFactoryInterfaceDependencies(currentRepositoryFilePath, () => {
+                                            businessService.removeBusinessFactoryDependencies(currentRepositoryFilePath, () => {
+                                                controllerService.disattachControllerFromServer(currentRepositoryFilePath, callback);
+                                            });
                                         });
                                     }
                                 });

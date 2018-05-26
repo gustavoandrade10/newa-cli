@@ -116,9 +116,10 @@ export class ControllerService {
 
                 rl.on('line', (line) => {
                     
-                    if(line.indexOf('import') > -1 && line.toLowerCase().indexOf('controller') > -1){
+                    if(line.indexOf('import') > -1 && line.toLowerCase().indexOf('controller/controllers') > -1){
                         insertLine = false;
                     }
+                    // Remove comments that starts with '//import'
                     else if (line.toLowerCase().indexOf('//import') > -1){
                         insertLine = false;
                     }

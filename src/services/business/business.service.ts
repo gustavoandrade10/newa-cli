@@ -213,6 +213,62 @@ export class BusinessService {
         });
     }
 
+    // Used when creating a blank project
+    removeBusinessFactoryInterfaceDependencies(projectPath: string, callback: Function) {
+        const businessFactoryInterfaceFilePath = path.resolve(projectPath, config.NEWARepository.businessPaths.factoryInterfaceFile)
+
+        fs.exists(businessFactoryInterfaceFilePath, (exists: boolean) => {
+
+            if (exists) {
+
+                let instream = fs.createReadStream(businessFactoryInterfaceFilePath);
+                let rl = readline.createInterface(instream, new stream.Writable);
+                let data = '';
+                let insertLine = true, isInClassBody = false;
+
+                rl.on('line', (line) => {
+
+                    if (line.indexOf('import') > -1) {
+                        insertLine = false;
+                    }
+                    else {
+                        insertLine = true;
+                    }
+
+                    if (insertLine && !isInClassBody) {
+                        data += line + '\n';
+                    }
+
+                    if (line.indexOf('export') > -1 && line.indexOf('interface') > -1 && line.indexOf('IBusinessFactory') > -1) {
+                        isInClassBody = true;
+                    }
+
+                });
+
+                rl.on('close', () => {
+
+                    data = data + '}';
+
+                    fs.writeFile(businessFactoryInterfaceFilePath, data, 'utf8', (err: NodeJS.ErrnoException) => {
+
+                        if (err) {
+                            callback(false);
+                        }
+                        else {
+                            callback(true);
+                        }
+
+                    });
+                });
+
+            }
+            else {
+                callback(false);
+            }
+
+        });
+    }
+
     private addBusinessToBusinessFactory(modelName: string, callback: Function) {
 
         fs.exists(path.resolve(config.NEWARepository.businessPaths.factories, 'BusinessFactory.ts'), (exists: boolean) => {
