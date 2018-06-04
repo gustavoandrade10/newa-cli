@@ -17,6 +17,12 @@ Node.js
 
 ### Installing Dependencies
 
+First install typescript globally.
+
+```sh
+$ npm install -g typescript 
+```
+
 Install the dependencies listed inside of **package.json** file.
 
 ```sh
