@@ -36,13 +36,13 @@ $ npm install
 $ npm run watch:build
 ```
 
-Use this command to compile typescripts and watch for changes. 
+Use this command to compile typescript files and watch for changes. 
 
 ```sh
 $ tsc
 ```
 
-Use this command to compile typescripts once.
+Use this command to compile typescript files once.
 
 # Usage
 
