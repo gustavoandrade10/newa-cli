@@ -51,7 +51,7 @@ You can find all possible commands in the table below:
 Scaffold  | Usage | Options | description
 ---       | ---   | ---     | ---
 [Project](https://github.com/TalissonJunior/NodeExpressWebApi) | `newa new my-new-project`   |  `--e|--example` | `Creates a new blank project.`
-[All]() | `newa g|generate a|all my-model-name` | `--t|--table my-table-name     --env|--environment my-environment` | ` Generates model, repository, business and controller, based on a model name.`
+[All]() | `newa g||generate a||all my-model-name` | `--t||--table my-table-name     --env||--environment my-environment` | ` Generates model, repository, business and controller, based on a model name.`
 [Model]()           | `newa g|generate m|model my-model-name`  | `--t|--table my-table-name     --env|--environment my-environment` | `Generates a new model.`
 [Repository]()     | `newa g|generate r|repository my-model-name` | `----` | ` Generates a new repository, based on a existent model.`
 [Business]()     | `newa g|generate b|business my-model-name` | `----` | `Generates a new business, based on a existent model.` 
