@@ -4,7 +4,7 @@ let packJson = <any>json;
 
 export let COMMANDOPTIONS: string = `
     options for project:
-        --b|--blank                 If set, Generates a blank project without defaults(model,repository,business and controller).
+        --e|--example                 If set, Generates a example project.
 
     options for model:
         --t|--table <tablename>         Sets the name of table to use.
