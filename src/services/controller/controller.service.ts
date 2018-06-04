@@ -10,6 +10,8 @@ import { BaseResponse } from '../../utils/BaseResponse';
 import { controllerTemplate } from './constants/controllerTemplate';
 import { ServiceResponse } from '../../utils/ServiceResponse';
 import { ServiceResponseType } from '../../enums/ServiceResponseType';
+import { validUpdatedDateFields } from '../model/constants/validCreatedUpdatedDateFields';
+import { Util } from '../../utils/utils';
 
 export class ControllerService {
 
@@ -49,6 +51,7 @@ export class ControllerService {
 
                                 let controllTemplate = controllerTemplate.replace(/{{modelName}}/g, modelName);
                                 controllTemplate = controllTemplate.replace(/{{routeName}}/g, modelName.toLowerCase())
+                                controllTemplate = controllTemplate.replace(/{{modelNameCamelCase}}/g, Util.lowercaseFistLetter(modelName));
 
                                 fs.writeFile(config.NEWARepository.controllerPaths.main + modelName + config.NEWARepository.controllerPaths.extension, controllTemplate, (err: NodeJS.ErrnoException) => {
 

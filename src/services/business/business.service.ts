@@ -42,85 +42,52 @@ export class BusinessService {
                         this.validateService.repositoryAndClassExists(modelName, (repositoryResponse: BaseResponse) => {
 
                             if (repositoryResponse.success) {
-                                let generatedBusinessInterface = false;
 
-                                //Check if interface alread exists before create
-                                fs.exists(path.resolve(config.NEWARepository.businessPaths.interfaces + 'I' + modelName + config.NEWARepository.businessPaths.extension), (exists: boolean) => {
+                                //Check if classe already exists before create
+                                fs.exists(path.resolve(config.NEWARepository.businessPaths.main + modelName + config.NEWARepository.businessPaths.extension), (exists: boolean) => {
 
                                     if (exists) {
                                         this.spinner.fail();
-                                        Log.highlight(`Already exists business interface file @!I${modelName}${config.NEWARepository.businessPaths.extension}!@.`);
+                                        Log.highlight(`Already exists business file @!${modelName}${config.NEWARepository.businessPaths.extension}!@.`);
                                     }
-
                                     else {
-                                        fs.writeFile(config.NEWARepository.businessPaths.interfaces + 'I' + modelName + config.NEWARepository.businessPaths.extension, iBusinessTemplate.replace(/{{modelName}}/g, modelName), (err: NodeJS.ErrnoException) => {
+                                        fs.writeFile(config.NEWARepository.businessPaths.main + modelName + config.NEWARepository.businessPaths.extension, businessTemplate.replace(/{{modelName}}/g, modelName), (err: NodeJS.ErrnoException) => {
 
                                             if (err) {
                                                 this.spinner.fail();
                                                 Log.error('Failed to generate business.');
+                                                process.exit();
                                             }
                                             else {
-                                                generatedBusinessInterface = true;
+                                                this.addBusinessToInterfaceBusinessFactory(modelName, (businessInterfaceFactoryPath: string) => {
 
-                                                //Check if classe already exists before create
-                                                fs.exists(path.resolve(config.NEWARepository.businessPaths.main + modelName + config.NEWARepository.businessPaths.extension), (exists: boolean) => {
+                                                    this.addBusinessToBusinessFactory(modelName, (businessFactoryPath: string) => {
 
-                                                    if (exists) {
-                                                        this.spinner.fail();
-                                                        Log.highlight(`Already exists business file @!${modelName}${config.NEWARepository.businessPaths.extension}!@.`);
-                                                    }
-                                                    else {
-                                                        fs.writeFile(config.NEWARepository.businessPaths.main + modelName + config.NEWARepository.businessPaths.extension, businessTemplate.replace(/{{modelName}}/g, modelName), (err: NodeJS.ErrnoException) => {
+                                                        let response: Array<ServiceResponse> = [];
 
-                                                            if (err) {
-                                                                this.spinner.fail();
-                                                                Log.error('Failed to generate business.');
-                                                                process.exit();
-                                                            }
-                                                            else {
-                                                                this.addBusinessToInterfaceBusinessFactory(modelName, (businessInterfaceFactoryPath: string) => {
-
-                                                                    this.addBusinessToBusinessFactory(modelName, (businessFactoryPath: string) => {
-
-                                                                        let response: Array<ServiceResponse> = [];
-
-                                                                        if (generatedBusinessInterface) {
-                                                                            response.push({
-                                                                                type: ServiceResponseType.created,
-                                                                                message: path.join(process.cwd(), config.NEWARepository.businessPaths.interfaces, 'I' + modelName + config.NEWARepository.businessPaths.extension)
-                                                                            });
-                                                                        }
-
-                                                                        response.push({
-                                                                            type: ServiceResponseType.created,
-                                                                            message: path.join(process.cwd(), config.NEWARepository.businessPaths.main, modelName + config.NEWARepository.businessPaths.extension)
-                                                                        });
-
-                                                                        if (businessInterfaceFactoryPath) {
-                                                                            response.push({
-                                                                                type: ServiceResponseType.updated,
-                                                                                message: businessInterfaceFactoryPath
-                                                                            });
-                                                                        }
-
-                                                                        if (businessFactoryPath) {
-                                                                            response.push({
-                                                                                type: ServiceResponseType.updated,
-                                                                                message: businessFactoryPath
-                                                                            });
-                                                                        }
-
-                                                                        callback(response);
-                                                                    });
-
-                                                                });
-                                                            }
-
+                                                        response.push({
+                                                            type: ServiceResponseType.created,
+                                                            message: path.join(process.cwd(), config.NEWARepository.businessPaths.main, modelName + config.NEWARepository.businessPaths.extension)
                                                         });
 
-                                                    }
-                                                });
+                                                        if (businessInterfaceFactoryPath) {
+                                                            response.push({
+                                                                type: ServiceResponseType.updated,
+                                                                message: businessInterfaceFactoryPath
+                                                            });
+                                                        }
 
+                                                        if (businessFactoryPath) {
+                                                            response.push({
+                                                                type: ServiceResponseType.updated,
+                                                                message: businessFactoryPath
+                                                            });
+                                                        }
+
+                                                        callback(response);
+                                                    });
+
+                                                });
                                             }
 
                                         });
@@ -235,7 +202,7 @@ export class BusinessService {
                         insertLine = true;
                     }
 
-                    if (insertLine && !isInClassBody) {
+                    if (insertLine && !isInClassBody && line.trim().length > 0) {
                         data += line + '\n';
                     }
 
@@ -281,15 +248,13 @@ export class BusinessService {
                     if (!(fileData.indexOf(`Get${modelName}Business()`) > -1)) {
                         const BL: string = "\n"; //Break line
                         const T: string = "\t" //Tab line
-                        var lastBracketPos, businessFactoryClassePos, breakLinePosAfterBusinessFactoryClasse = 0;
+                        var lastBracketPos;
 
                         //Add imports
                         let modelBusinessPath = path.relative(path.resolve(config.NEWARepository.businessPaths.factories), path.resolve(config.NEWARepository.businessPaths.main)).replace(/\\/g, '/');
-                        let modelInterfaceBusinessPath = path.relative(path.resolve(config.NEWARepository.businessPaths.factories), path.resolve(config.NEWARepository.businessPaths.interfaces)).replace(/\\/g, '/');
                         let modelRepositoryPath = path.relative(path.resolve(config.NEWARepository.businessPaths.factories), path.resolve(config.NEWARepository.repositoryPaths.main)).replace(/\\/g, '/');
 
                         let imports: string = `import { ${modelName}Business } from "${modelBusinessPath}/${modelName}Business";${
-                            BL}import { I${modelName}Business } from "${modelInterfaceBusinessPath}/I${modelName}Business";${
                             BL}import { ${modelName}Repository } from "${modelRepositoryPath}/${modelName}Repository";\n`
 
                         //add imports to the beginning
@@ -297,20 +262,10 @@ export class BusinessService {
                         //End imports
 
 
-                        //Add private fields
-                        let privateFields: string = `{${BL + T}private _i${modelName}Business: I${modelName}Business;`;
-
-                        businessFactoryClassePos = fileData.lastIndexOf('IBusinessFactory');
-                        breakLinePosAfterBusinessFactoryClasse = fileData.substr(businessFactoryClassePos).indexOf('{');
-
-                        fileData = fileData.slice(0, (businessFactoryClassePos + breakLinePosAfterBusinessFactoryClasse)) + fileData.substr(businessFactoryClassePos + breakLinePosAfterBusinessFactoryClasse).replace('{', privateFields);
-                        // End private fields    
-
                         // Add Method
                         let insertMethod: string = `${
-                            BL + T}public Get${modelName}Business(): I${modelName}Business{${
-                            BL + BL + T + T}this._i${modelName}Business = new ${modelName}Business(new ${modelName}Repository());${
-                            BL + BL + T + T}return this._i${modelName}Business;${
+                            BL + T}public Get${modelName}Business(): ${modelName}Business{${
+                            BL + T + T}return new ${modelName}Business(new ${modelName}Repository());${
                             BL + T}}${
                             BL}}`;
 
@@ -362,10 +317,10 @@ export class BusinessService {
                         var lastBracketPos, businessFactoryClassePos, breakLinePosAfterBusinessFactoryClasse = 0;
 
                         //Add imports
-                        let modelInterfaceBusinessPath = path.relative(path.resolve(config.NEWARepository.businessPaths.interfaces), path.resolve(config.NEWARepository.businessPaths.interfaces)).replace(/\\/g, '/');
-                        modelInterfaceBusinessPath = modelInterfaceBusinessPath.length == 0 ? '.' : modelInterfaceBusinessPath;
+                        let modelBusinessPath = path.relative(path.resolve(config.NEWARepository.businessPaths.interfaces), path.resolve(config.NEWARepository.businessPaths.main)).replace(/\\/g, '/');
+                        modelBusinessPath = modelBusinessPath.length == 0 ? '.' : modelBusinessPath;
 
-                        let imports: string = `import { I${modelName}Business } from "${modelInterfaceBusinessPath}/I${modelName}Business";\n`;
+                        let imports: string = `import { ${modelName}Business } from "${modelBusinessPath}/${modelName}Business";\n`;
 
                         //add imports to the beginning
                         fileData = imports + fileData;
@@ -373,7 +328,7 @@ export class BusinessService {
 
                         // Add Method
                         let insertMethod: string = `${
-                            T}Get${modelName}Business(): I${modelName}Business;${
+                            T}Get${modelName}Business(): ${modelName}Business;${
                             BL}}`;
 
                         lastBracketPos = fileData.lastIndexOf('}');

@@ -1,49 +1,49 @@
 export var controllerTemplate = 
 `import { Response, Params, Controller, Get, Post, Body, Put, Delete } from '@decorators/express';
-import { {{modelName}} } from '../../Models/Database/{{modelName}}';
 import { BusinessFactory } from '../../Business/Factories/BusinessFactory';
-import { I{{modelName}}Business } from '../../Business/Interfaces/I{{modelName}}Business';
+import { {{modelName}}Business } from '../../Business/Rules/{{modelName}}Business';
+import { {{modelName}} } from '../../Models/Database/{{modelName}}';
 import { Authorize } from '../Middlewares/Authorize';
 
 @Controller('/{{routeName}}')
 export class {{modelName}}Controller{
 
   private businessFactory: BusinessFactory;
-  private currentBusinnes: I{{modelName}}Business;
+  private {{modelNameCamelCase}}Businnes: {{modelName}}Business;
 
   constructor() {
     this.businessFactory =  new BusinessFactory();
-    this.currentBusinnes = this.businessFactory.Get{{modelName}}Business();
+    this.{{modelNameCamelCase}}Businnes = this.businessFactory.Get{{modelName}}Business();
   }
 
   // @description List all {{modelName}}s
   @Get('/')
   ListAll(@Response() res) {
-    res.send(this.currentBusinnes.ListAll());
+    res.send(this.{{modelNameCamelCase}}Businnes.ListAll());
   }
 
   // @description Get {{modelName}} by id
   @Get('/:id')
   ListByID(@Response() res, @Params('id') id: number) {
-    res.send(this.currentBusinnes.ListByID(id));
+    res.send(this.{{modelNameCamelCase}}Businnes.ListByID(id));
   }
 
   // @description Create new {{modelName}}
   @Post('/')
   Insert(@Response() res, @Body() model: {{modelName}}) {
-    res.send(this.currentBusinnes.Insert(model));
+    res.send(this.{{modelNameCamelCase}}Businnes.Insert(model));
   }
 
   // @description Update {{modelName}} by id
   @Put('/:id')
   Update(@Response() res, @Params('id') id: number, @Body() model: {{modelName}}) {
-    res.send(this.currentBusinnes.Update(id, model));
+    res.send(this.{{modelNameCamelCase}}Businnes.Update(id, model));
   }
 
   // @description Delete {{modelName}} by id
   @Delete('/:id')
   Delete(@Response() res, @Params('id') id: number) {
-    res.send(this.currentBusinnes.Delete(id));
+    res.send(this.{{modelNameCamelCase}}Businnes.Delete(id));
   }
 
 }

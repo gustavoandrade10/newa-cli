@@ -47,7 +47,7 @@ class App {
             .command('new <projectname>')
             .alias('n')
             .description('Creates a new project')
-            .option('--b , --blank', 'Generates a blank project.')
+            .option('--e , --example', 'Creates a example project.')
             .action((projectname, options) => {
 
                 if (Validator.projectNameValidator(projectname)) {
@@ -60,7 +60,7 @@ class App {
                     }).then((answer: any) => {
 
                         let hasToInstallDepedencies = Validator.yesOrNoAnswerValidator(answer.install_dependencies);
-                        let isBlankProject = options.blank === undefined ? false : true;
+                        let isBlankProject = options.example === undefined ? true : false;
 
                         this.projectService.create(projectname, hasToInstallDepedencies, isBlankProject);
 

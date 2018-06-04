@@ -34,71 +34,37 @@ export class RepositoryService {
                 this.validateService.modelAndClassExists(modelName, (response: BaseResponse) => {
                     
                     if (response.success) {
-                        let generatedRepositoryInterface = false;
+                            //Check if classe alread exists before create
+                            fs.exists(path.resolve(config.NEWARepository.repositoryPaths.main + modelName + config.NEWARepository.repositoryPaths.extension), (exists: boolean) => {
 
-                        //Check if interface alread exists before create
-                        fs.exists(path.resolve(config.NEWARepository.repositoryPaths.interfaces + 'I' + modelName + config.NEWARepository.repositoryPaths.extension), (exists: boolean) => {
+                                if (exists) {
 
-                            if (exists) {
-                                this.spinner.stop();
-                                Log.highlight(`Already exists repository interface file @!I${modelName}${config.NEWARepository.repositoryPaths.extension}!@.`);
-                            }
+                                    this.spinner.fail();
+                                    Log.highlight(`Already exists repository file @!${modelName}${config.NEWARepository.repositoryPaths.extension}!@.`);
+                                }
+                                else {
+                                    fs.writeFile(config.NEWARepository.repositoryPaths.main + modelName + config.NEWARepository.repositoryPaths.extension, repositoryTemplate.replace(/{{modelName}}/g, modelName), (err: NodeJS.ErrnoException) => {
 
-                            else {
-                                fs.writeFile(config.NEWARepository.repositoryPaths.interfaces + 'I' + modelName + config.NEWARepository.repositoryPaths.extension, iRepositoryTemplate.replace(/{{modelName}}/g, modelName), (err: NodeJS.ErrnoException) => {
+                                        if (err) {
+                                            this.spinner.fail()
+                                            Log.error('Failed to generate repository.');
+                                            process.exit();
+                                        }
+                                        else {
+                                            let response: Array<ServiceResponse> = [];
 
-                                    if (err) {
-                                        this.spinner.fail();
-                                        Log.error('Failed to generate repository.');
-                                    }
-                                    else {
-                                        generatedRepositoryInterface = true;
+                                            response.push({
+                                                type: ServiceResponseType.created,
+                                                message: path.join(process.cwd(), config.NEWARepository.repositoryPaths.main, modelName + config.NEWARepository.repositoryPaths.extension)
+                                            });
 
-                                        //Check if classe alread exists before create
-                                        fs.exists(path.resolve(config.NEWARepository.repositoryPaths.main + modelName + config.NEWARepository.repositoryPaths.extension), (exists: boolean) => {
+                                            callback(response);
+                                        }
 
-                                            if (exists) {
+                                    });
 
-                                                this.spinner.fail();
-                                                Log.highlight(`Already exists repository file @!${modelName}${config.NEWARepository.repositoryPaths.extension}!@.`);
-                                            }
-                                            else {
-                                                fs.writeFile(config.NEWARepository.repositoryPaths.main + modelName + config.NEWARepository.repositoryPaths.extension, repositoryTemplate.replace(/{{modelName}}/g, modelName), (err: NodeJS.ErrnoException) => {
-
-                                                    if (err) {
-                                                        this.spinner.fail()
-                                                        Log.error('Failed to generate repository.');
-                                                        process.exit();
-                                                    }
-                                                    else {
-                                                        let response: Array<ServiceResponse> = [];
-
-                                                        if (generatedRepositoryInterface) {
-                                                            response.push({
-                                                                type: ServiceResponseType.created,
-                                                                message: path.join(process.cwd(), config.NEWARepository.repositoryPaths.interfaces, 'I' + modelName + config.NEWARepository.repositoryPaths.extension)
-                                                            });
-                                                        }
-
-                                                        response.push({
-                                                            type: ServiceResponseType.created,
-                                                            message: path.join(process.cwd(), config.NEWARepository.repositoryPaths.main, modelName + config.NEWARepository.repositoryPaths.extension)
-                                                        });
-
-                                                        callback(response);
-                                                    }
-
-                                                });
-
-                                            }
-                                        });
-
-                                    }
-
-                                });
-
-                            }
-                        });
+                                }
+                            });
 
                     }
                     else {

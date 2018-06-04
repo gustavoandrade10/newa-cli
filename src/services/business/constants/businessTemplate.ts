@@ -1,12 +1,11 @@
 export var businessTemplate = 
 `import { BaseBusiness } from "./BaseBusiness";
 import { {{modelName}} } from "../../Models/Database/{{modelName}}";
-import { I{{modelName}}Business } from "../Interfaces/I{{modelName}}Business";
-import { I{{modelName}}Repository } from "../../Repository/Interfaces/I{{modelName}}Repository";
+import { {{modelName}}Repository } from "../../Repository/Repositories/{{modelName}}Repository";
 
-export class {{modelName}}Business extends BaseBusiness<I{{modelName}}Repository, {{modelName}}> implements I{{modelName}}Business {
+export class {{modelName}}Business extends BaseBusiness<{{modelName}}Repository, {{modelName}}> {
 
-    constructor(private _repository: I{{modelName}}Repository) {
+    constructor(private _repository: {{modelName}}Repository) {
         super(_repository);
     }
 
