@@ -17,7 +17,7 @@ Node.js
 
 ### Installing Dependencies
 
-First install typescript globally.
+Install typescript globally.
 
 ```sh
 $ npm install -g typescript 
