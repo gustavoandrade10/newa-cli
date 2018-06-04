@@ -38,7 +38,7 @@ $ tsc
 
 Use this command to compile typescripts once.
 
-### Usage
+# Usage
 
 ```sh
 $ newa help
@@ -48,11 +48,11 @@ $ newa help
 
 You can find all possible commands in the table below:
 
-Scaffold  | Usage | Options
----       | ---   | ---
-[Project](https://github.com/TalissonJunior/NodeExpressWebApi) | `newa new my-new-project`   |  `--e|--example`
-[All]() | `newa g|generate a|all my-new-model-repository-business-controller` | `--t|--table my-table-name     --env|--environment my-environment`
-[Model]()           | `newa g|generate m|model my-model-name`  | `--t|--table my-table-name     --env|--environment my-environment` 
-[Repository]()     | `newa g|generate r|repository my-model-name` | `----` 
-[Business]()     | `newa g|generate b|business my-model-name` | `----` 
-[Controller]()     | `newa g|generate c|controller my-model-name` | `----` 
+Scaffold  | Usage | Options | description
+---       | ---   | ---     | ---
+[Project](https://github.com/TalissonJunior/NodeExpressWebApi) | `newa new my-new-project`   |  `--e|--example` | `Creates a new blank project.`
+[All]() | `newa g|generate a|all my-model-name` | `--t|--table my-table-name     --env|--environment my-environment` | ` Generates model, repository, business and controller, based on a model name.`
+[Model]()           | `newa g|generate m|model my-model-name`  | `--t|--table my-table-name     --env|--environment my-environment` | `Generates a new model.`
+[Repository]()     | `newa g|generate r|repository my-model-name` | `----` | ` Generates a new repository, based on a existent model.`
+[Business]()     | `newa g|generate b|business my-model-name` | `----` | `Generates a new business, based on a existent model.` 
+[Controller]()     | `newa g|generate c|controller my-model-name` | `----` | `Generates a new controller, based on a existent model.`
