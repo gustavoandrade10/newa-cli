@@ -24,8 +24,8 @@ export class {{modelName}}Controller{
 
   // @description Get {{modelName}} by id
   @Get('/:id')
-  ListByID(@Response() res, @Params('id') id: number) {
-    res.send(this.{{modelNameCamelCase}}Businnes.ListByID(id));
+  GetByID(@Response() res, @Params('id') id: number) {
+    res.send(this.{{modelNameCamelCase}}Businnes.GetByID(id));
   }
 
   // @description Create new {{modelName}}
