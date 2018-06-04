@@ -3,7 +3,6 @@ export var controllerTemplate =
 import { BusinessFactory } from '../../Business/Factories/BusinessFactory';
 import { {{modelName}}Business } from '../../Business/Rules/{{modelName}}Business';
 import { {{modelName}} } from '../../Models/Database/{{modelName}}';
-import { Authorize } from '../Middlewares/Authorize';
 
 @Controller('/{{routeName}}')
 export class {{modelName}}Controller{
