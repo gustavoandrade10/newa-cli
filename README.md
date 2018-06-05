@@ -94,6 +94,13 @@ newa g a <modelname> --t <tablename> --env <enviromentname>
 - Model - Representation of a table in your database.
 
 
+### Resources (available only for example projects).
+
+You can find a dump file of the database and postman resources that were used in this project on **"resources/"** folder.
+
+Just import them and you are good to go.
+
+
 ## Development Hints for working on NEWA CLI
 
 
