@@ -93,9 +93,6 @@ export class ProjectService {
                     Log.success('\n\tgulp serve')
                     Log.info('\t  Starts the development server.')
 
-                    Log.success('\n\tnewa')
-                    Log.info('\t  If "newa-cli" is installed, then it will show newa-cli commands.')
-
                     Log.info('\nWe suggest that you begin by typing:\n')
                     Log.success(`  cd ${this.projectName}`)
 
@@ -120,9 +117,6 @@ export class ProjectService {
 
             Log.success('\n\tgulp serve')
             Log.info('\t  Starts the development server.')
-
-            Log.success('\n\tnewa')
-            Log.info('\t  If "newa-cli" is installed, then it will show newa-cli commands.')
 
             Log.info('\nWe suggest that you begin by typing:\n')
             Log.success(`  cd ${this.projectName}`)
