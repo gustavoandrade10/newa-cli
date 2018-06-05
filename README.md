@@ -60,7 +60,7 @@ For example, ```newa generate model user``` creates a model by the name of ```Us
 ```sh
 newa new <projectname> --example
 
-newa generate model <modelname> --table <tablename> --environment  <enviromentname>
+newa generate model <modelname> --table <tablename> --environment  <environmentname>
 
 newa generate repository <modelname>
 
@@ -68,7 +68,7 @@ newa generate business <modelname>
 
 newa generate controller <modelname>
 
-newa generate all <modelname> --table <tablename> --environment  <enviromentname>
+newa generate all <modelname> --table <tablename> --environment  <environmentname>
 
 ```
 
@@ -77,7 +77,7 @@ shortcuts:
 ```sh
 newa n <projectname> --example
 
-newa g m <modelname> --t <tablename> --env  <enviromentname>
+newa g m <modelname> --t <tablename> --env  <environmentname>
 
 newa g r <modelname>
 
@@ -85,7 +85,7 @@ newa g b <modelname>
 
 newa g c <modelname>
 
-newa g a <modelname> --t <tablename> --env <enviromentname>
+newa g a <modelname> --t <tablename> --env <environmentname>
 
 ```
 
