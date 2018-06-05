@@ -1,6 +1,6 @@
 {
   "name": "newa",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Cli for Node Express Web Api (NEWA) with typescript",
   "main": "index.js",
   "scripts": {

@@ -28,7 +28,7 @@ export const config = {
             'src/controller',
             'src/business',
             'src/config',
-            'gulpfile.js',
+            'gulpfile.ts',
             'package.json',
             'tsconfig.json'
         ]
