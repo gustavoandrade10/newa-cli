@@ -1,5 +1,8 @@
+import {Log} from '../../utils/log';
 import * as fs from 'fs';
 import * as path from 'path';
+import { exec } from 'child_process';
+import * as Ora from 'ora';
 import { config } from '../../config/config';
 import { BaseResponse } from '../../utils/BaseResponse';
 import { LogErrorResponse } from '../../utils/LogErrorResponse';
@@ -65,8 +68,8 @@ export class ValidateService {
 
     }
 
-     // Checks if a business exists and if it is valid (has 'export class modelNameBusiness')
-     businessAndClassExists(modelName: string, callback: Function) {
+    // Checks if a business exists and if it is valid (has 'export class modelNameBusiness')
+    businessAndClassExists(modelName: string, callback: Function) {
 
         this.verifyFileAndClass(path.resolve(config.NEWARepository.businessPaths.main), modelName + config.NEWARepository.businessPaths.extension, modelName, (response: BaseResponse) => {
 
@@ -129,6 +132,36 @@ export class ValidateService {
         }
     }
 
+    // Check if gulp-cli is installed if not install it
+    checkProjectDependencies(callback: Function) {
+        exec('npm list --depth 1 --global gulp-cli', (error: Error, stdout: string, stderr: string) => {
+
+            if(error){
+                
+                Log.error('gulp-cli wasn´t found.')
+                let spinner = new Ora({ spinner: 'dots' });
+                spinner.text = 'installing gulp-cli using npm...';
+                spinner.start();
+
+                exec('npm install gulp-cli -g', (error: Error, stdout: string, stderr: string) => {
+
+                    if(error){
+                       spinner.fail();
+                       Log.info('\n');
+                       callback(false);
+                    }
+                    else{
+                       spinner.succeed();
+                       Log.info('\n');
+                       callback(true);
+                    }
+                });
+            }
+            else{
+               callback(true);
+            }
+        });
+    }
 
     // Will check if file exists and if it has 'export class filename' inside of it
     private verifyFileAndClass(fileFolderPath: string, fileNamWithExtension: string, className: string, callback: Function) {

@@ -50,25 +50,29 @@ class App {
             .option('--e , --example', 'Creates a example project.')
             .action((projectname, options) => {
 
-                if (Validator.projectNameValidator(projectname)) {
+                this.validateService.checkProjectDependencies((installed: boolean) => {
 
-                    inquirer.prompt({
-                        type: 'input',
-                        name: 'install_dependencies',
-                        message: `Do you want NEWA to install the dependencies of ${projectname}?`,
-                        validate: Validator.inquirerYesOrNoAnswerValidator
-                    }).then((answer: any) => {
+                    if (Validator.projectNameValidator(projectname)) {
 
-                        let hasToInstallDepedencies = Validator.yesOrNoAnswerValidator(answer.install_dependencies);
-                        let isBlankProject = options.example === undefined ? true : false;
+                        inquirer.prompt({
+                            type: 'input',
+                            name: 'install_dependencies',
+                            message: `Do you want NEWA to install the dependencies of ${projectname}?`,
+                            validate: Validator.inquirerYesOrNoAnswerValidator
+                        }).then((answer: any) => {
 
-                        this.projectService.create(projectname, hasToInstallDepedencies, isBlankProject);
+                            let hasToInstallDepedencies = Validator.yesOrNoAnswerValidator(answer.install_dependencies);
+                            let isBlankProject = options.example === undefined ? true : false;
 
-                    });
-                }
-                else {
-                    Log.error('Project name may only include letters, numbers, hyphen and underscore.');
-                }
+                            this.projectService.create(projectname, hasToInstallDepedencies, isBlankProject);
+
+                        });
+                    }
+                    else {
+                        Log.error('Project name may only include letters, numbers, hyphen and underscore.');
+                    }
+
+                });
 
             });
 
@@ -224,7 +228,7 @@ class App {
                     spinner.start();
 
                     let databaseEnviroment = options.environment != undefined ? options.environment : 'default';
-                    
+
                     this.modelService.create(modelname, options.table, databaseEnviroment, (modelResponse: Array<ServiceResponse>) => {
 
                         this.repositoryService.create(modelname, (repositoryResponse: Array<ServiceResponse>) => {
